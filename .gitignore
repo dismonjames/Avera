@@ -1,0 +1,10 @@
+/target
+/build
+**/*.rs.bk
+*.o
+*.obj
+*.exe
+Cargo.lock.bak
+avera_eval_*
+/tests_tmp*
+
