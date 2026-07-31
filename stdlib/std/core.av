@@ -1,0 +1,6 @@
+#std.core
+
+// std.core: the language core. Primitive types (I8..I64, U8..U64, F32/F64,
+// Bool, Text, Byte, Char), the `main` action convention and ownership
+// primitives are all compiler built-ins in v0.1; no explicit declarations
+// are needed here.
