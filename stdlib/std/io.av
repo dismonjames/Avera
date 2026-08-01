@@ -1,0 +1,5 @@
+#std.io
+
+// std.io: the standard I/O module. `print`, `write`, `eprint`, `input`,
+// `read` and `panic` are built-in actions provided by the compiler runtime;
+// no explicit declarations are needed in v0.1.
