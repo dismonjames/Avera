@@ -1,0 +1,13 @@
+#std.io
+
+action add(a: I32, b: I32): I32 will
+    return a + b
+finish
+
+action main(): I32 will
+    :x = 10
+    :y = 20
+    :z = add(x, y)
+    print("sum:", z)
+    return 0
+finish

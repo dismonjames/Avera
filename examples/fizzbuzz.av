@@ -1,0 +1,16 @@
+#std.io
+
+action main(): I32 will
+    for i in 1..17 will
+        if i % 15 == 0 will
+            print("FizzBuzz")
+        else if i % 3 == 0 will
+            print("Fizz")
+        else if i % 5 == 0 will
+            print("Buzz")
+        else
+            print(i)
+        finish
+    finish
+    return 0
+finish

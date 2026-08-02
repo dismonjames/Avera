@@ -1,0 +1,15 @@
+#std.io
+
+action square(x: I32): I32 will
+    return x * x
+finish
+
+action sum_of_squares(a: I32, b: I32): I32 will
+    return square(a) + square(b)
+finish
+
+action main(): I32 will
+    :r = sum_of_squares(3, 4)
+    print("sum_of_squares(3, 4) =", r)
+    return 0
+finish

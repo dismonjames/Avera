@@ -1,0 +1,16 @@
+#std.io
+
+action main(): I32 will
+    :a = 0
+    :b = 1
+    :t = 0
+    :i = 0
+    while i < 10 will
+        t = a + b
+        a = b
+        b = t
+        i += 1
+    finish
+    print("fib(10) =", a)
+    return 0
+finish

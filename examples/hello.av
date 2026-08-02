@@ -1,0 +1,6 @@
+#std.io
+
+action main(): I32 will
+    print("Hello from Avera")
+    return 0
+finish
