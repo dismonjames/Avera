@@ -1,0 +1,12 @@
+#std.io
+
+action main(): I32 will
+    :i = 0
+    :sum = 0
+    while i < 10 will
+        sum += i
+        i += 1
+    finish
+    print("sum 0..9:", sum)
+    return 0
+finish

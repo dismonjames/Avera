@@ -1,0 +1,14 @@
+#std.io
+
+action main(): I32 will
+    :n = 3
+    match n will
+        1 =>
+            print("one")
+        2 =>
+            print("two")
+        _ =>
+            print("other")
+    finish
+    return 0
+finish

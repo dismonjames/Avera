@@ -1,0 +1,10 @@
+#std.io
+
+action main(): I32 will
+    :sum = 0
+    for i in 0..10 will
+        sum = sum + i
+    finish
+    print("sum 0..10:", sum)
+    return 0
+finish

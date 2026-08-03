@@ -1,0 +1,13 @@
+#std.io
+
+action main(): I32 will
+    :score = 75
+    if score > 80 will
+        print("A")
+    else if score > 60 will
+        print("B")
+    else
+        print("C")
+    finish
+    return 0
+finish

@@ -1,0 +1,14 @@
+#std.io
+
+action main(): I32 will
+    for i in 0..5 will
+        if i > 2 will
+            print("big:", i)
+        else if i == 0 will
+            print("zero")
+        else
+            print("small:", i)
+        finish
+    finish
+    return 0
+finish

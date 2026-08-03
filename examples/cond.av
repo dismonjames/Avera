@@ -1,0 +1,27 @@
+#std.io
+
+action classify(temp: I32): I32 will
+    if temp < 10 will
+        print(temp, "cold")
+    else if temp < 20 will
+        print(temp, "cool")
+    else if temp < 30 will
+        if temp < 25 will
+            print(temp, "mild")
+        else
+            print(temp, "warm")
+        finish
+    else
+        print(temp, "hot")
+    finish
+    return 0
+finish
+
+action main(): I32 will
+    classify(5)
+    classify(15)
+    classify(23)
+    classify(27)
+    classify(35)
+    return 0
+finish

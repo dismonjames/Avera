@@ -1,0 +1,26 @@
+#std.io
+
+action parse_num(s: I32): I32 will
+    if s == 0 will
+        return 0
+    finish
+    return s * 2
+finish
+
+action main(): I32 will
+    :result = .some(99)
+    match result will
+        .some(value) =>
+            print("value:", value)
+        .none =>
+            print("no value")
+    finish
+    :m2 = .none()
+    match m2 will
+        .some(v) =>
+            print("v:", v)
+        .none =>
+            print("empty")
+    finish
+    return 0
+finish
