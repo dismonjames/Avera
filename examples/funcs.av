@@ -1,0 +1,11 @@
+#std.io
+
+action add(a: I32, b: I32): I32 will
+    return a + b
+finish
+
+action main(): I32 will
+    :r = add(3, 4)
+    print("add(3,4)=", r)
+    return 0
+finish

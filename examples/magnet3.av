@@ -1,0 +1,14 @@
+#std.io
+
+action main(): I32 will
+    :x = 42
+    ~m = x
+    print("addr:", ~m.address)
+    print("offset:", ~m.offset)
+    print("value:", ~m.value)
+    :y = 99
+    m -> y
+    print("after retarget value:", ~m.value)
+    print("after retarget addr:", ~m.address)
+    return 0
+finish

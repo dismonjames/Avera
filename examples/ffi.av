@@ -1,0 +1,14 @@
+#std.io
+
+foreign C will
+    action clock(): I64
+    action abs(n: I32): I32
+finish
+
+action main(): I32 will
+    :t = clock()
+    print("clock:", t)
+    :a = abs(-42)
+    print("abs(-42):", a)
+    return 0
+finish

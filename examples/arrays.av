@@ -1,0 +1,11 @@
+#std.io
+
+action main(): I32 will
+    :arr = [10, 20, 30, 40, 50]
+    print("len:", arr.len())
+    for i in 0..5 will
+        :v = arr[i]
+        print("elem:", v)
+    finish
+    return 0
+finish

@@ -1,0 +1,18 @@
+#std.io
+
+shape Point will
+    x: I32
+    y: I32
+finish
+
+action make_point(x: I32, y: I32): Point will
+    :p = Point(x, y)
+    return p
+finish
+
+action main(): I32 will
+    :pt = make_point(3, 4)
+    print("x:", pt.x)
+    print("y:", pt.y)
+    return 0
+finish

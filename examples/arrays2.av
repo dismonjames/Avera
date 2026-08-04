@@ -1,0 +1,22 @@
+#std.io
+
+action main(): I32 will
+    :arr = [10, 20, 30, 40, 50]
+    print("len:", arr.len())
+    print("cap:", arr.cap())
+    for i in 0..5 will
+        :v = arr[i]
+        print("elem:", v)
+    finish
+    arr.push(60)
+    arr.push(70)
+    print("after push len:", arr.len())
+    print("after push cap:", arr.cap())
+    :p = arr.pop()
+    print("popped:", p)
+    print("after pop len:", arr.len())
+    for i in 0..arr.len() will
+        print("elem:", arr[i])
+    finish
+    return 0
+finish

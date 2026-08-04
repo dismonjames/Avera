@@ -1,0 +1,19 @@
+#std.io
+
+action main(): I32 will
+    :greeting = "Hello, Text!"
+    print(greeting)
+    print("len:", greeting.len())
+    :a = "foo"
+    :b = "bar"
+    :c = a + b
+    print("concat:", c)
+    print("concat len:", c.len())
+    if a == "foo" will
+        print("a is foo")
+    finish
+    for i in 0..greeting.len() will
+        print("char:", greeting[i])
+    finish
+    return 0
+finish

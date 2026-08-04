@@ -1,0 +1,11 @@
+#std.io
+
+action main(): I32 will
+    :x = 42
+    :y = 999
+    ~a = x
+    ~b = y
+    print("a ->", x, "at", ~a.address)
+    print("b ->", y, "at", ~b.address)
+    return 0
+finish

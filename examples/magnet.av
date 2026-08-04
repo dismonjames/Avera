@@ -1,0 +1,9 @@
+#std.io
+
+action main(): I32 will
+    :value = 42
+    ~m = value
+    print("Value:", value)
+    print("Address:", ~m.address)
+    return 0
+finish

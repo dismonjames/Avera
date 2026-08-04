@@ -1,0 +1,16 @@
+#std.io
+
+action main(): I32 will
+    for n in 2..21 will
+        :d = 2
+        while n % d != 0 will
+            d += 1
+        finish
+        if d == n will
+            print(n, "is prime")
+        else
+            print(n, "=", d, "*", n / d)
+        finish
+    finish
+    return 0
+finish

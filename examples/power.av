@@ -1,0 +1,13 @@
+#std.io
+
+action main(): I32 will
+    :exp = 10
+    :result = 1
+    :i = 0
+    while i < exp will
+        result += result
+        i += 1
+    finish
+    print("2^10 =", result)
+    return 0
+finish

@@ -1,0 +1,17 @@
+#std.io
+
+shape Point will
+    x: I32
+    y: I32
+finish
+
+action Point.sum(p: Point): I32 will
+    return p.x + p.y
+finish
+
+action main(): I32 will
+    :pt = Point(10, 20)
+    :s = pt.sum()
+    print("sum:", s)
+    return 0
+finish

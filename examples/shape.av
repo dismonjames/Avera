@@ -1,0 +1,24 @@
+#std.io
+
+shape User will
+    name: Text
+    age: I32
+finish
+
+action User.greet(u: User): I32 will
+    print("User:")
+    print("name:", u.name)
+    print("age:", u.age)
+    return 0
+finish
+
+action make_user(n: Text, a: I32): User will
+    :u = User(n, a)
+    return u
+finish
+
+action main(): I32 will
+    :me = make_user("Alice", 30)
+    me.greet()
+    return 0
+finish
