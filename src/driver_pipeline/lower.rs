@@ -63,13 +63,15 @@ fn rewrite_block(stmts: &mut Vec<Stmt>, loops: &mut Vec<LoopKind>) -> Result<(),
                 pat, iter, body, ..
             } => {
                 if !matches!(iter.kind, ExprKind::Range { .. }) {
-                    return Err("non-range for iterators are not implemented in stage-0".to_string());
+                    return Err(
+                        "non-range for iterators are not implemented in stage-0".to_string(),
+                    );
                 }
                 let name = match &pat.kind {
                     PatKind::Bind(name) => name.clone(),
                     _ => {
                         return Err(
-                            "range-for currently requires a simple binding pattern".to_string(),
+                            "range-for currently requires a simple binding pattern".to_string()
                         )
                     }
                 };
@@ -141,9 +143,7 @@ fn reject_fake_eprint(expr: &Expr) -> Result<(), String> {
                 reject_fake_eprint(arg)?;
             }
         }
-        ExprKind::MethodCall {
-            receiver, args, ..
-        } => {
+        ExprKind::MethodCall { receiver, args, .. } => {
             reject_fake_eprint(receiver)?;
             for arg in args {
                 reject_fake_eprint(arg)?;
