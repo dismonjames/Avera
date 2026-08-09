@@ -1,6 +1,14 @@
 use crate::symbol::TypeId;
-use crate::types::ty::{Abilities, TyData, TyId};
+use crate::types::ty::{Abilities, CopyKind, TyData, TyId};
 use std::collections::HashMap;
+
+static NO_ABILITIES: Abilities = Abilities {
+    copy: CopyKind::No,
+    drop: false,
+    display: false,
+    equal: false,
+    order: false,
+};
 
 #[derive(Clone)]
 pub struct TyCtxt {
@@ -116,9 +124,10 @@ impl TyCtxt {
     }
 
     pub fn abilities(&self, id: TyId) -> &Abilities {
-        self.abilities[id.to_usize()]
-            .as_ref()
-            .expect("abilities not set")
+        self.abilities
+            .get(id.to_usize())
+            .and_then(Option::as_ref)
+            .unwrap_or(&NO_ABILITIES)
     }
 
     pub fn set_abilities(&mut self, id: TyId, ab: Abilities) {
