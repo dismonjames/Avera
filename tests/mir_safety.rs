@@ -33,8 +33,7 @@ fn ownership_rejects_uninitialized_mir_use() {
     check_ownership(&body, &mut diags);
 
     assert!(diags.iter().any(|diag| {
-        diag.kind == DiagnosticKind::EUseAfterDrop
-            && diag.message.contains("uninitialized value")
+        diag.kind == DiagnosticKind::EUseAfterDrop && diag.message.contains("uninitialized value")
     }));
 }
 
@@ -46,11 +45,8 @@ fn borrow_survives_cfg_edge_and_blocks_move() {
     let ty = TypeId::new(0);
 
     let mut body = Body::new("borrow_cfg".to_string(), ty);
-    body.locals.extend([
-        local(0, "owner"),
-        local(1, "holder"),
-        local(2, "moved"),
-    ]);
+    body.locals
+        .extend([local(0, "owner"), local(1, "holder"), local(2, "moved")]);
     body.params.push(owner);
     body.blocks.push(BasicBlock {
         id: BlockId::new(0),
