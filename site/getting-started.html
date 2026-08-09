@@ -52,15 +52,16 @@
     
 <div class="doc-section">
   <h1><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></h1>
-  <p class="lead"><span class="vi">Hướng dẫn build trình biên dịch từ mã nguồn và viết chương trình Avera đầu tiên.</span><span class="en hidden">Guide to building the compiler from source and writing your first Avera program.</span></p>
+  <p class="lead"><span class="vi">Hướng dẫn cài đặt trình biên dịch Avera và viết chương trình đầu tiên.</span><span class="en hidden">Guide to installing the Avera compiler and writing your first program.</span></p>
 
   <h2><span class="vi">1. Yêu cầu hệ thống</span><span class="en hidden">1. Prerequisites</span></h2>
+  <p class="vi">Avera biên dịch trực tiếp ra mã máy và cần một <strong>C Linker</strong> trên hệ thống để đóng gói thành file thực thi.</p>
+  <p class="en hidden">Avera compiles ahead-of-time and requires a <strong>C Linker</strong> on your system to link the final executable.</p>
   <ul>
-    <li><strong>Rust stable</strong> &amp; Cargo: <span class="vi">cài qua</span><span class="en hidden">install via</span> <code>https://rustup.rs</code>.</li>
-    <li><strong>C linker</strong> (<code>gcc</code> / <code>clang</code> / <code>cc</code>).</li>
+    <li><strong>Linux / macOS</strong>: <code>gcc</code>, <code>clang</code>, hoặc <code>cc</code> (thường có sẵn hoặc cài qua <code>build-essential</code> / Xcode Build Tools).</li>
+    <li><strong>Windows</strong>: MSVC (Visual Studio C++ Build Tools) hoặc MinGW/GCC.</li>
   </ul>
 
-  
   <h2><span class="vi">2. Cài đặt nhanh (Pre-built Binaries)</span><span class="en hidden">2. Quick Install (Pre-built Binaries)</span></h2>
   <p class="vi">Cách nhanh nhất để dùng Avera là cài đặt bản build sẵn cho Linux, macOS hoặc Windows.</p>
   <p class="en hidden">The fastest way to use Avera is to install the pre-built binaries for Linux, macOS, or Windows.</p>
