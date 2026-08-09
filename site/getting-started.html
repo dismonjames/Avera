@@ -60,7 +60,25 @@
     <li><strong>C linker</strong> (<code>gcc</code> / <code>clang</code> / <code>cc</code>).</li>
   </ul>
 
-  <h2><span class="vi">2. Build từ mã nguồn</span><span class="en hidden">2. Build from Source</span></h2>
+  
+  <h2><span class="vi">2. Cài đặt nhanh (Pre-built Binaries)</span><span class="en hidden">2. Quick Install (Pre-built Binaries)</span></h2>
+  <p class="vi">Cách nhanh nhất để dùng Avera là cài đặt bản build sẵn cho Linux, macOS hoặc Windows.</p>
+  <p class="en hidden">The fastest way to use Avera is to install the pre-built binaries for Linux, macOS, or Windows.</p>
+
+  <h3>Linux / macOS (amd64 & arm64)</h3>
+  <div class="cb">
+  <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+  <pre><code>curl -sSL https://raw.githubusercontent.com/dismonjames/Avera/main/install.sh | sh</code></pre>
+</div>
+
+  <h3>Windows (amd64 & arm64)</h3>
+  <div class="cb">
+  <div class="cb-head"><span>PowerShell</span><button class="copy-btn">Copy</button></div>
+  <pre><code>irm https://raw.githubusercontent.com/dismonjames/Avera/main/install.ps1 | iex</code></pre>
+</div>
+
+  <h2><span class="vi">3. Build từ mã nguồn (Dành cho Dev)</span><span class="en hidden">3. Build from Source (For Devs)</span></h2>
+
   <div class="cb">
   <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
   <pre><code>git clone https://github.com/dismonjames/Avera.git
@@ -73,7 +91,7 @@ cargo build --release
 ./target/release/avera version</code></pre>
 </div>
 
-  <h2><span class="vi">3. Hello World</span><span class="en hidden">3. Hello World</span></h2>
+  <h2><span class="vi">4. Hello World</span><span class="en hidden">4. Hello World</span></h2>
   <p class="vi">Tạo file <code>hello.av</code>. Sử dụng từ khóa <code>action</code> cho hàm và cặp <code>will</code>...<code>finish</code> cho khối lệnh.</p>
   <p class="en hidden">Create <code>hello.av</code>. Use the <code>action</code> keyword for functions and <code>will</code>...<code>finish</code> for blocks.</p>
 
