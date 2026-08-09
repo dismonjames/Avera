@@ -83,12 +83,6 @@ long avera_read_i64(void) {
     return strtol(buf, NULL, 10);
 }
 
-/*
- * Every Avera allocation has a small private header immediately before the
- * pointer visible to generated code. `aux` lets compound allocations (arrays
- * and Text) own a separately reallocatable buffer while keeping the public
- * handle stable. Shapes/choices simply leave aux == NULL.
- */
 typedef struct AveraAllocHeader {
     uint64_t magic;
     void *aux;
@@ -121,11 +115,7 @@ void *avera_alloc(long size) {
 void avera_free(void *ptr) {
     if (!ptr) return;
     AveraAllocHeader *header = avera_alloc_header(ptr);
-    if (header->magic != AVERA_ALLOC_MAGIC) {
-        /* Owned values must come from avera_alloc. Refuse to free an unknown
-         * pointer rather than turning a compiler bug into allocator UB. */
-        return;
-    }
+    if (header->magic != AVERA_ALLOC_MAGIC) return;
     free(header->aux);
     header->aux = NULL;
     header->magic = 0;
@@ -153,11 +143,9 @@ static int avera_array_bytes(long cap, long elem_size, size_t *out) {
 void *avera_alloc_array(long n, long elem_size) {
     if (n < 0 || elem_size <= 0) return NULL;
     if (n > (LONG_MAX - 8) / 2) return NULL;
-
     long cap = n * 2 + 8;
     size_t bytes = 0;
     if (!avera_array_bytes(cap, elem_size, &bytes)) return NULL;
-
     AveraArray *arr = (AveraArray *)avera_alloc((long)sizeof(AveraArray));
     if (!arr) return NULL;
     arr->data = (unsigned char *)calloc(1, bytes);
@@ -208,7 +196,10 @@ long avera_array_set(void *arr_ptr, long index, long value, long elem_size) {
     }
     long *slot = (long *)(arr->data + (size_t)index * 8);
     *slot = value;
-    return 0;
+    /* Current stage-0 MIR models Call with a destination even for setter-like
+     * helpers. Return the stable owner handle so that destination remains valid
+     * until lowering learns to use a dedicated ignored temp for unit calls. */
+    return (long)(intptr_t)arr_ptr;
 }
 
 long avera_array_cap(void *arr_ptr) {
@@ -220,13 +211,11 @@ long avera_array_push(void *arr_ptr, long value) {
     AveraArray *arr = (AveraArray *)arr_ptr;
     if (!arr) return 0;
     if (arr->elem_size != 8) return arr->len;
-
     if (arr->len >= arr->cap) {
         if (arr->cap > (LONG_MAX - 8) / 2) return arr->len;
         long new_cap = arr->cap * 2 + 8;
         size_t bytes = 0;
         if (!avera_array_bytes(new_cap, arr->elem_size, &bytes)) return arr->len;
-
         unsigned char *new_data = (unsigned char *)realloc(arr->data, bytes);
         if (!new_data) return arr->len;
         if (new_cap > arr->cap) {
@@ -237,7 +226,6 @@ long avera_array_push(void *arr_ptr, long value) {
         arr->cap = new_cap;
         avera_set_aux(arr, new_data);
     }
-
     long *slot = (long *)(arr->data + (size_t)arr->len * 8);
     *slot = value;
     arr->len++;
@@ -322,9 +310,6 @@ pub fn build_runtime_object(build_dir: &Path) -> PathBuf {
     let rt_path = build_dir.join("avera_runtime.c");
     let obj_path = build_dir.join("avera_runtime.o");
     std::fs::create_dir_all(build_dir).ok();
-    // Only (re)write the source if it differs from the embedded RUNTIME_C.
-    // Rewriting unconditionally would bump the mtime on every call and force
-    // a recompile under parallel test runs, racing the linker.
     let need_write = match std::fs::read_to_string(&rt_path) {
         Ok(existing) => existing != RUNTIME_C,
         Err(_) => true,
@@ -332,7 +317,6 @@ pub fn build_runtime_object(build_dir: &Path) -> PathBuf {
     if need_write {
         std::fs::write(&rt_path, RUNTIME_C).ok();
     }
-    // Reuse an existing object if it's newer than the source (no recompile).
     if let (Ok(src_meta), Ok(obj_meta)) =
         (std::fs::metadata(&rt_path), std::fs::metadata(&obj_path))
     {
@@ -342,8 +326,6 @@ pub fn build_runtime_object(build_dir: &Path) -> PathBuf {
             }
         }
     }
-    // Compile to a unique temp file, then atomically rename to the final path.
-    // This avoids a race where a parallel build reads a half-written object.
     let pid = std::process::id();
     let tmp_obj = build_dir.join(format!(
         "avera_runtime.{}.{}.o",
@@ -359,13 +341,8 @@ pub fn build_runtime_object(build_dir: &Path) -> PathBuf {
         .arg(&rt_path)
         .output();
     if !tmp_obj.exists() {
-        // Compilation failed; fall back to any existing object.
         return obj_path;
     }
-    // Try to atomically install the freshly built object. If a parallel build
-    // already installed one (newer than ours, or simply present), keep the
-    // existing object and link against our temp copy instead. Either way the
-    // caller links a valid, complete object — never a half-written file.
     match std::fs::rename(&tmp_obj, &obj_path) {
         Ok(()) => obj_path,
         Err(_) => tmp_obj,
