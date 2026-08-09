@@ -1,74 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
-  let currentLang = 'vi';
+  let lang = 'vi';
 
-  const langToggleBtn = document.getElementById('langToggleBtn');
-  const langBadge = langToggleBtn.querySelector('.lang-badge');
-  const langText = langToggleBtn.querySelector('.lang-text');
+  const btn  = document.getElementById('langToggleBtn');
+  const badge = btn && btn.querySelector('.lang-badge');
+  const ltxt  = btn && btn.querySelector('.lang-text');
 
-  langToggleBtn.addEventListener('click', () => {
-    if (currentLang === 'vi') {
-      currentLang = 'en';
-      langBadge.textContent = 'EN';
-      langText.textContent = 'English';
-      document.querySelectorAll('.lang-vi').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.lang-en').forEach(el => el.classList.remove('hidden'));
-    } else {
-      currentLang = 'vi';
-      langBadge.textContent = 'VI';
-      langText.textContent = 'Tiếng Việt';
-      document.querySelectorAll('.lang-en').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.lang-vi').forEach(el => el.classList.remove('hidden'));
-    }
-  });
+  function applyLang(l) {
+    lang = l;
+    if (badge) badge.textContent = l === 'vi' ? 'VI' : 'EN';
+    if (ltxt)  ltxt.textContent  = l === 'vi' ? 'Tiếng Việt' : 'English';
+    document.querySelectorAll('.vi').forEach(e => e.classList.toggle('hidden', l !== 'vi'));
+    document.querySelectorAll('.en').forEach(e => e.classList.toggle('hidden', l !== 'en'));
+  }
 
-  // Copy code blocks
+  if (btn) btn.addEventListener('click', () => applyLang(lang === 'vi' ? 'en' : 'vi'));
+  applyLang('vi');
+
+  // Copy buttons
   document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const codeBlock = btn.closest('.code-block').querySelector('code');
-      if (codeBlock) {
-        navigator.clipboard.writeText(codeBlock.innerText).then(() => {
-          const originalText = btn.innerText;
-          btn.innerText = 'Copied!';
-          setTimeout(() => {
-            btn.innerText = originalText;
-          }, 2000);
-        });
-      }
+      const code = btn.closest('.cb').querySelector('code');
+      if (!code) return;
+      navigator.clipboard.writeText(code.innerText).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 1800);
+      });
     });
   });
 
-  // Search filtering
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
-    document.querySelectorAll('.doc-section').forEach(section => {
-      const text = section.innerText.toLowerCase();
-      if (text.includes(query)) {
-        section.style.display = 'block';
-      } else {
-        section.style.display = 'none';
-      }
-    });
-  });
+  // Active nav link on scroll
+  const links    = document.querySelectorAll('.nav-link[href^="#"]');
+  const sections = document.querySelectorAll('.doc-section[id]');
+  if (links.length && sections.length) {
+    const onScroll = () => {
+      let cur = '';
+      sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + cur));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
 
-  // Sidebar link highlight on scroll
-  const navLinks = document.querySelectorAll('.nav-link');
-  const sections = document.querySelectorAll('.doc-section');
-
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop - 80;
-      if (window.scrollY >= sectionTop) {
-        current = section.getAttribute('id');
-      }
+  // Search filter (single-page only)
+  const si = document.getElementById('searchInput');
+  if (si) {
+    si.addEventListener('input', () => {
+      const q = si.value.toLowerCase();
+      document.querySelectorAll('.doc-section').forEach(s => {
+        s.style.display = (!q || s.innerText.toLowerCase().includes(q)) ? '' : 'none';
+      });
     });
-
-    navLinks.forEach(link => {
-      link.classList.remove('active');
-      if (link.getAttribute('href') === `#${current}`) {
-        link.classList.add('active');
-      }
-    });
-  });
+  }
 });

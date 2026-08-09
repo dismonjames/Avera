@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avera Language Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-l">
+    <a href="index.html" class="logo">
+      <div class="logo-mark">A</div>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+    </a>
+  </div>
+  <div class="nav-c">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search documentation...">
+    </div>
+  </div>
+  <div class="nav-r">
+    <button id="langToggleBtn" class="lang-btn">
+      <span class="lang-badge">VI</span>
+      <span class="lang-text">Tiếng Việt</span>
+    </button>
+    <a href="https://github.com/dismonjames/Avera" target="_blank" rel="noopener" class="gh-link">
+      <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+          <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
+          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
+          <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link active"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
+          <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
+    </nav>
+  </aside>
+  <main class="main">
+    
+<div class="doc-section">
+  <h1><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet Pointer</span></h1>
+  <p class="lead"><span class="vi">Giải thích chi tiết cơ chế quản lý bộ nhớ tĩnh của Avera: quy tắc Ownership, Borrow và hệ thống con trỏ Magnet.</span><span class="en hidden">Detailed explanation of Avera's static memory management: Ownership rules, Borrow rules, and the Magnet pointer system.</span></p>
+
+  <h2><span class="vi">1. Ownership — Quyền sở hữu bộ nhớ</span><span class="en hidden">1. Ownership — Memory Ownership</span></h2>
+  <p class="vi">Mỗi giá trị trong Avera được theo dõi qua bốn trạng thái bởi MIR Ownership Checker:</p>
+  <p class="en hidden">Each value in Avera is tracked through four states by the MIR Ownership Checker:</p>
+
+  <table class="tbl">
+    <thead><tr><th><span class="vi">Trạng thái</span><span class="en hidden">State</span></th><th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>Uninit</code></td><td><span class="vi">Biến chưa được gán giá trị.</span><span class="en hidden">Variable not yet initialized.</span></td></tr>
+      <tr><td><code>Init</code></td><td><span class="vi">Biến đã có giá trị, có thể sử dụng.</span><span class="en hidden">Variable is initialized and usable.</span></td></tr>
+      <tr><td><code>Moved</code></td><td><span class="vi">Ownership đã bị chuyển đi nơi khác. Biến không thể dùng nữa.</span><span class="en hidden">Ownership was transferred elsewhere. Variable can no longer be used.</span></td></tr>
+      <tr><td><code>Dropped</code></td><td><span class="vi">Biến đã bị giải phóng bộ nhớ (drop). Biến không thể dùng nữa.</span><span class="en hidden">Variable was dropped (memory freed). Variable can no longer be used.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3><span class="vi">Quy tắc Ownership</span><span class="en hidden">Ownership Rules</span></h3>
+  <ul>
+    <li><span class="vi">Không thể drop một giá trị đã ở trạng thái Moved hoặc đã Dropped.</span><span class="en hidden">You cannot drop a value that has been Moved or already Dropped.</span></li>
+    <li><span class="vi">Không thể sử dụng (đọc/ghi) biến đang ở trạng thái Uninit, Moved, hoặc Dropped.</span><span class="en hidden">You cannot use (read/write) a variable that is Uninit, Moved, or Dropped.</span></li>
+    <li><span class="vi">Khi biến ra khỏi scope, Drop Elaborator tự động chèn lệnh drop vào MIR.</span><span class="en hidden">When a variable goes out of scope, the Drop Elaborator automatically inserts a drop into the MIR.</span></li>
+  </ul>
+
+  <div class="cb">
+  <div class="cb-head"><span>ownership.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>:msg = "quan trong"
+:target = ^msg          # ^msg = move ownership sang target
+                        # msg bây giờ ở trạng thái Moved
+
+# print(msg)            # LỖI BIÊN DỊCH: E4001 — Use after move
+print(target)           # OK</code></pre>
+</div>
+
+  <div class="notice">
+    <div class="nt"><span class="vi">Move vs Copy</span><span class="en hidden">Move vs Copy</span></div>
+    <p class="vi">Toán tử <code>^expr</code> thực hiện move tường minh. Với các kiểu nguyên thủy nhỏ (I32, Bool...) trình biên dịch có thể copy ngầm định. Với shape và choice, gán thông thường là move.</p>
+    <p class="en hidden">The <code>^expr</code> operator performs an explicit move. Small primitive types (I32, Bool...) may be implicitly copied by the compiler. Shape and choice assignments are moves.</p>
+  </div>
+
+  <h2><span class="vi">2. Borrow — Tham chiếu an toàn</span><span class="en hidden">2. Borrow — Safe References</span></h2>
+  <p class="vi">Borrow là cách tham chiếu giá trị mà không lấy ownership. Borrow Checker theo dõi trạng thái: <code>None</code>, <code>Shared</code>, <code>Mut</code>.</p>
+  <p class="en hidden">A borrow is a reference to a value without taking ownership. The Borrow Checker tracks state: <code>None</code>, <code>Shared</code>, <code>Mut</code>.</p>
+
+  <h3><span class="vi">Quy tắc Borrow</span><span class="en hidden">Borrow Rules</span></h3>
+  <ul>
+    <li><span class="vi">Không thể tạo mutable borrow khi đã có shared hoặc mutable borrow trên cùng địa điểm.</span><span class="en hidden">Cannot create a mutable borrow if a shared or mutable borrow already exists on the same place.</span></li>
+    <li><span class="vi">Không thể tạo shared borrow khi đang có mutable borrow.</span><span class="en hidden">Cannot create a shared borrow while a mutable borrow is active.</span></li>
+    <li><span class="vi">Không thể ghi/gán vào một địa điểm đang được mutable borrow.</span><span class="en hidden">Cannot write/assign to a place that is currently under a mutable borrow.</span></li>
+    <li><span class="vi">Không thể drop một giá trị đang bị borrow.</span><span class="en hidden">Cannot drop a value that is currently borrowed.</span></li>
+  </ul>
+
+  <div class="cb">
+  <div class="cb-head"><span>borrow.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>action read_it(u: &User) will     # shared borrow
+    print(u.name)
+finish
+
+action edit_it(u: &!User) will    # mutable borrow
+    u.age = 25
+finish</code></pre>
+</div>
+
+  <h2><span class="vi">3. Magnet Pointer (~) — Con trỏ gắn địa chỉ</span><span class="en hidden">3. Magnet Pointer (~) — Address-Attached Pointer</span></h2>
+  <p class="vi">Magnet pointer là khái niệm độc đáo của Avera. Khi bạn viết <code>~m = target</code>, magnet <code>m</code> gắn trực tiếp vào địa chỉ runtime thực sự của biến <code>target</code>. Magnet Checker theo dõi trạng thái: <code>Detached</code>, <code>Attached</code>, <code>Moved</code>, <code>Dropped</code>.</p>
+  <p class="en hidden">The Magnet pointer is a unique Avera concept. When you write <code>~m = target</code>, magnet <code>m</code> attaches to the actual runtime memory address of <code>target</code>. The Magnet Checker tracks state: <code>Detached</code>, <code>Attached</code>, <code>Moved</code>, <code>Dropped</code>.</p>
+
+  <h3><span class="vi">Cú pháp Magnet</span><span class="en hidden">Magnet Syntax</span></h3>
+
+  <div class="cb">
+  <div class="cb-head"><span>magnet.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>:value = 42
+
+# Khai báo magnet (immutable)
+~m = value
+
+# Khai báo magnet mutable
+~!m = value
+
+# Đọc địa chỉ bộ nhớ thực tế
+print("Address:", ~m.address)
+
+# Retarget: trỏ magnet sang biến khác
+:other = 99
+m -> other</code></pre>
+</div>
+
+  <h3><span class="vi">Quy tắc Magnet Checker</span><span class="en hidden">Magnet Checker Rules</span></h3>
+  <ul>
+    <li><span class="vi">Không thể đọc địa chỉ hoặc thực hiện tính toán với magnet đang ở trạng thái Detached.</span><span class="en hidden">Cannot read address or perform arithmetic on a Detached magnet.</span></li>
+    <li><span class="vi">Không thể dùng magnet khi target đã bị Moved hoặc Dropped (lỗi EMagnetUseAfterMove).</span><span class="en hidden">Cannot use a magnet whose target has been Moved or Dropped (error EMagnetUseAfterMove).</span></li>
+    <li><span class="vi">Gắn magnet vào một biến (~m = place) hoạt động như một borrow — sẽ lỗi nếu place đang bị mutable borrow.</span><span class="en hidden">Attaching a magnet (~m = place) acts as a borrow — fails if the place is under a mutable borrow.</span></li>
+  </ul>
+
+  <div class="cb">
+  <div class="cb-head"><span>magnet_error.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>:x = 10
+~m = x
+
+:y = ^x     # x bị move sang y
+            # Bây giờ target của m đã bị Moved
+
+# print(~m.address)    # LỖI: EMagnetUseAfterMove</code></pre>
+</div>
+</div>
+
+    <footer class="footer">
+      <p>© 2026 <strong>Lê Hùng Quang Minh</strong>. Released under GPL-3.0.</p>
+    </footer>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

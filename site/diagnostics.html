@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avera Language Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-l">
+    <a href="index.html" class="logo">
+      <div class="logo-mark">A</div>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+    </a>
+  </div>
+  <div class="nav-c">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search documentation...">
+    </div>
+  </div>
+  <div class="nav-r">
+    <button id="langToggleBtn" class="lang-btn">
+      <span class="lang-badge">VI</span>
+      <span class="lang-text">Tiếng Việt</span>
+    </button>
+    <a href="https://github.com/dismonjames/Avera" target="_blank" rel="noopener" class="gh-link">
+      <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+          <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
+          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
+          <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
+          <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link active"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
+    </nav>
+  </aside>
+  <main class="main">
+    
+<div class="doc-section">
+  <h1><span class="vi">Mã Lỗi & Tra cứu (Diagnostics)</span><span class="en hidden">Diagnostics & Error Code Reference</span></h1>
+  <p class="lead"><span class="vi">Bảng tra cứu mã lỗi theo giai đoạn biên dịch và hướng dẫn khắc phục. Tra nhanh bằng: avera explain &lt;CODE&gt;</span><span class="en hidden">Error code lookup table by compiler stage with remediation notes. Query with: avera explain <CODE></span></p>
+
+  <h2><span class="vi">Giai đoạn Lexer (E0xxx)</span><span class="en hidden">Lexer Stage (E0xxx)</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>E0001</code></td><td><span class="vi">Ký tự không hợp lệ trong mã nguồn.</span><span class="en hidden">Invalid character in source.</span></td><td><span class="vi">Kiểm tra ký tự đặc biệt, dấu câu sai hoặc ký tự Unicode không được hỗ trợ.</span><span class="en hidden">Check for unsupported special characters or punctuation.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="vi">Giai đoạn Parser (E1xxx)</span><span class="en hidden">Parser Stage (E1xxx)</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>E0100</code></td><td><span class="vi">Lỗi cú pháp khi phân tích AST.</span><span class="en hidden">Syntax error during AST parsing.</span></td><td><span class="vi">Kiểm tra xem có thiếu từ khóa will, finish, dấu ngoặc hay không.</span><span class="en hidden">Check for missing will, finish keywords or mismatched brackets.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="vi">Giai đoạn Resolver (E2xxx)</span><span class="en hidden">Resolver Stage (E2xxx)</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>E2001</code></td><td><span class="vi">Tên biến hoặc hàm chưa được khai báo trong scope hiện tại.</span><span class="en hidden">Unresolved name — variable or function not declared in current scope.</span></td><td><span class="vi">Kiểm tra chính tả, đảm bảo đã khai báo biến trước khi dùng.</span><span class="en hidden">Check spelling, ensure variable declared before use.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="vi">Giai đoạn TypeChecker (E3xxx)</span><span class="en hidden">TypeChecker Stage (E3xxx)</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>E3001</code></td><td><span class="vi">Kiểu dữ liệu không khớp (Type mismatch).</span><span class="en hidden">Type mismatch.</span></td><td><span class="vi">Dùng cast :> để chuyển đổi, hoặc kiểm tra lại kiểu khai báo.</span><span class="en hidden">Use :> cast, or check declared types.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="vi">Giai đoạn Ownership Checker (E4xxx)</span><span class="en hidden">Ownership Checker Stage (E4xxx)</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>E4001</code></td><td><span class="vi">Use-after-move: biến đã bị di chuyển ownership nhưng vẫn được truy cập.</span><span class="en hidden">Use-after-move: variable ownership was moved, then accessed again.</span></td><td><span class="vi">Không dùng biến sau khi đã move. Dùng borrow (&) nếu chỉ cần đọc.</span><span class="en hidden">Don't use variables after moving them. Use borrow (&) if you only need to read.</span></td></tr>
+      <tr><td><code>E4002</code></td><td><span class="vi">Use-after-drop: biến đã bị giải phóng bộ nhớ nhưng vẫn được truy cập.</span><span class="en hidden">Use-after-drop: variable was dropped, then accessed again.</span></td><td><span class="vi">Kiểm tra thứ tự các câu lệnh drop (expr!).</span><span class="en hidden">Check the order of explicit drop (expr!) statements.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="vi">Giai đoạn Borrow Checker (E4xxx)</span><span class="en hidden">Borrow Checker Stage (E4xxx)</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>E4010</code></td><td><span class="vi">Mutable borrow khi đã có borrow khác đang hoạt động.</span><span class="en hidden">Mutable borrow while another borrow is active.</span></td><td><span class="vi">Đảm bảo borrow cũ kết thúc scope trước khi tạo mutable borrow mới.</span><span class="en hidden">Ensure the existing borrow's scope ends before creating a mutable borrow.</span></td></tr>
+      <tr><td><code>E4011</code></td><td><span class="vi">Shared borrow khi đang có mutable borrow.</span><span class="en hidden">Shared borrow while a mutable borrow is active.</span></td><td><span class="vi">Tương tự E4010 — sắp xếp lại thứ tự sử dụng borrow.</span><span class="en hidden">Similar to E4010 — reorder borrow usage.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="vi">Giai đoạn Magnet Checker</span><span class="en hidden">Magnet Checker Stage</span></h2>
+  <table class="tbl">
+    <thead><tr><th>Code</th><th><span class="vi">Nguyên nhân</span><span class="en hidden">Cause</span></th><th><span class="vi">Cách sửa</span><span class="en hidden">Fix</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>EMagnetUseAfterMove</code></td><td><span class="vi">Dùng magnet pointer sau khi target đã bị move hoặc drop.</span><span class="en hidden">Using a magnet pointer after its target was moved or dropped.</span></td><td><span class="vi">Đảm bảo target còn sống (Init) trước khi dùng magnet. Dùng retarget (m -> other) nếu cần.</span><span class="en hidden">Ensure target is still alive (Init) before using the magnet. Use retarget (m -> other) if needed.</span></td></tr>
+      <tr><td><code>EMagnetDetached</code></td><td><span class="vi">Dùng magnet đang ở trạng thái Detached (chưa gắn target).</span><span class="en hidden">Using a magnet in Detached state (not attached to a target).</span></td><td><span class="vi">Phải gắn magnet trước: ~m = target.</span><span class="en hidden">Attach the magnet first: ~m = target.</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+    <footer class="footer">
+      <p>© 2026 <strong>Lê Hùng Quang Minh</strong>. Released under GPL-3.0.</p>
+    </footer>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

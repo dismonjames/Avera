@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avera Language Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-l">
+    <a href="index.html" class="logo">
+      <div class="logo-mark">A</div>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+    </a>
+  </div>
+  <div class="nav-c">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search documentation...">
+    </div>
+  </div>
+  <div class="nav-r">
+    <button id="langToggleBtn" class="lang-btn">
+      <span class="lang-badge">VI</span>
+      <span class="lang-text">Tiếng Việt</span>
+    </button>
+    <a href="https://github.com/dismonjames/Avera" target="_blank" rel="noopener" class="gh-link">
+      <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+          <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
+          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link active"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
+          <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
+          <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
+    </nav>
+  </aside>
+  <main class="main">
+    
+<div class="doc-section">
+  <h1><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></h1>
+  <p class="lead"><span class="vi">Hướng dẫn từng bước: build trình biên dịch từ mã nguồn Rust và viết + chạy chương trình Avera đầu tiên.</span><span class="en hidden">Step-by-step guide: build the compiler from Rust source and write your first Avera program.</span></p>
+
+  <h2><span class="vi">1. Yêu cầu hệ thống</span><span class="en hidden">1. Prerequisites</span></h2>
+  <ul>
+    <li><strong>Rust stable</strong> &amp; Cargo: <span class="vi">cài qua</span><span class="en hidden">install via</span> <code>https://rustup.rs</code>. <span class="vi">Kiểm tra bằng</span><span class="en hidden">Verify with</span> <code>rustc --version</code>.</li>
+    <li><strong>C linker</strong> (<code>gcc</code> / <code>clang</code> / <code>cc</code>): <span class="vi">cần có trong</span><span class="en hidden">must be on</span> <code>PATH</code>. <span class="vi">Avera gọi linker này để ghép file object thành file thực thi native.</span><span class="en hidden">Avera calls this linker to link the object file into a native executable.</span></li>
+  </ul>
+
+  <h2><span class="vi">2. Build từ mã nguồn</span><span class="en hidden">2. Build from Source</span></h2>
+  <div class="cb">
+  <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+  <pre><code>git clone https://github.com/dismonjames/Avera.git
+cd Avera
+
+# Build release binary (tối ưu hơn để dùng thực tế)
+cargo build --release
+
+# Xác nhận binary đã tồn tại
+./target/release/avera version</code></pre>
+</div>
+
+  <h2><span class="vi">3. Các lệnh CLI</span><span class="en hidden">3. CLI Commands</span></h2>
+  <p class="vi">Trình biên dịch cung cấp các lệnh sau (xem thêm ở trang <a href="diagnostics.html">Diagnostics</a>):</p>
+  <p class="en hidden">The compiler provides these commands (see also <a href="diagnostics.html">Diagnostics</a>):</p>
+
+  <table class="tbl">
+    <thead><tr><th><span class="vi">Lệnh</span><span class="en hidden">Command</span></th><th><span class="vi">Mô tả</span><span class="en hidden">Description</span></th></tr></thead>
+    <tbody>
+      <tr><td>avera run &lt;file&gt;</td><td><span class="vi">Build và chạy ngay file đó.</span><span class="en hidden">Build then immediately execute the file.</span></td></tr>
+      <tr><td>avera build &lt;files...&gt;</td><td><span class="vi">Biên dịch và liên kết thành file thực thi native.</span><span class="en hidden">Compile and link into a native executable.</span></td></tr>
+      <tr><td>avera check &lt;files...&gt;</td><td><span class="vi">Chỉ kiểm tra type-check và ownership, không sinh mã.</span><span class="en hidden">Type-check and ownership-check without emitting code.</span></td></tr>
+      <tr><td>avera fmt &lt;files...&gt;</td><td><span class="vi">Format lại mã nguồn. Thêm --check để chỉ kiểm tra.</span><span class="en hidden">Format source code. Use --check to only verify formatting.</span></td></tr>
+      <tr><td>avera test &lt;dirs...&gt;</td><td><span class="vi">Biên dịch và chạy test.</span><span class="en hidden">Compile and run tests.</span></td></tr>
+      <tr><td>avera explain &lt;CODE&gt;</td><td><span class="vi">Giải thích chi tiết một mã lỗi, ví dụ: avera explain E4001</span><span class="en hidden">Explain a diagnostic error code, e.g. avera explain E4001</span></td></tr>
+      <tr><td>avera clean</td><td><span class="vi">Xóa thư mục build/ chứa artifact.</span><span class="en hidden">Remove the build/ artifact directory.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3><span class="vi">Tùy chọn cho lệnh build</span><span class="en hidden">Build options</span></h3>
+  <ul>
+    <li><code>-O0</code>, <code>-O1</code>, <code>-O2</code>, <code>--opt</code>: <span class="vi">mức tối ưu hóa.</span><span class="en hidden">optimization level.</span></li>
+    <li><code>--emit ast</code> / <code>typed-ast</code> / <code>mir</code> / <code>clif</code> / <code>obj</code>: <span class="vi">chọn định dạng output trung gian để debug.</span><span class="en hidden">choose intermediate output format for debugging.</span></li>
+  </ul>
+
+  <h2><span class="vi">4. Chương trình đầu tiên: Hello World</span><span class="en hidden">4. First Program: Hello World</span></h2>
+  <p class="vi">Tạo file <code>hello.av</code>. Dòng <code>#std.io</code> là directive import module I/O chuẩn. Hàm <code>main</code> phải trả về <code>I32</code>.</p>
+  <p class="en hidden">Create <code>hello.av</code>. The <code>#std.io</code> line is a directive that imports the standard I/O module. The <code>main</code> action must return <code>I32</code>.</p>
+
+  <div class="cb">
+  <div class="cb-head"><span>hello.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>#std.io
+
+action main(): I32 will
+    print("Hello from Avera")
+    return 0
+finish</code></pre>
+</div>
+
+  <div class="cb">
+  <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+  <pre><code>./target/release/avera run hello.av
+# Output: Hello from Avera</code></pre>
+</div>
+
+  <div class="notice">
+    <div class="nt"><span class="vi">Lưu ý về cú pháp</span><span class="en hidden">Syntax Note</span></div>
+    <p class="vi">Trong Avera, khối lệnh (của hàm, vòng lặp, điều kiện...) mở bằng từ khóa <code>will</code> và đóng bằng <code>finish</code>, không dùng dấu ngoặc nhọn <code>{}</code>.</p>
+    <p class="en hidden">In Avera, statement blocks (for functions, loops, conditionals...) open with keyword <code>will</code> and close with <code>finish</code>. There are no curly braces <code>{}</code>.</p>
+  </div>
+</div>
+
+    <footer class="footer">
+      <p>© 2026 <strong>Lê Hùng Quang Minh</strong>. Released under GPL-3.0.</p>
+    </footer>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
