@@ -3,7 +3,8 @@
 > **Dự án cá nhân - Trình biên dịch Avera**  
 > **Tác giả:** Lê Hùng Quang Minh
 
-
+>[!CAUTION]
+>Phục vụ mục đích nghiên cứu, không sử dụng thực tế nếu không chấp nhận rủi ro
 
 > [!NOTE]  
 > **Ghi chú về tài liệu (Tiếng Việt & Tiếng Anh):**  
