@@ -32,6 +32,7 @@ jobs:
           src/check/validate.rs
           src/cli.rs
           src/diagnostics/emitter.rs
+          src/driver_pipeline/mod.rs
           src/driver_pipeline/runtime.rs
           src/module/mod.rs
           tests/common/mod.rs
@@ -41,6 +42,7 @@ jobs:
           tests/module_graph_regressions.rs
           tests/diagnostics_regressions.rs
           tests/cli_regressions.rs
+          tests/pipeline_regressions.rs
 
       - name: Check all targets
         run: cargo check --all-targets
