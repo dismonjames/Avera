@@ -100,7 +100,9 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
                 }
                 if input.is_none() {
                     if a.starts_with('-') {
-                        return Err(format!("unknown `run` flag `{a}`; use `--` before program args"));
+                        return Err(format!(
+                            "unknown `run` flag `{a}`; use `--` before program args"
+                        ));
                     }
                     input = Some(PathBuf::from(a));
                 } else {
