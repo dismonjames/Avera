@@ -31,6 +31,8 @@ jobs:
           src/check/magnet.rs
           src/check/validate.rs
           src/cli.rs
+          src/codegen/mod.rs
+          src/codegen/validate.rs
           src/diagnostics/emitter.rs
           src/driver_pipeline/lower.rs
           src/driver_pipeline/mod.rs
@@ -47,6 +49,7 @@ jobs:
           tests/pipeline_regressions.rs
           tests/project_regressions.rs
           tests/lowering_regressions.rs
+          tests/codegen_regressions.rs
 
       - name: Check all targets
         run: cargo check --all-targets
