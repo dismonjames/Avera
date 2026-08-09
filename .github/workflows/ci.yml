@@ -30,6 +30,7 @@ jobs:
           src/check/borrow.rs
           tests/common/mod.rs
           tests/compile_fail.rs
+          tests/mir_safety.rs
 
       - name: Check all targets
         run: cargo check --all-targets
