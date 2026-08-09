@@ -1,7 +1,9 @@
 # Avera Compiler
 
 > **Dự án cá nhân - Trình biên dịch Avera**  
-> **Người thực hiện:** Lê Hùng Quang Minh (Học sinh lớp 10) — `lhquangmink@gmail.com`
+> **Tác giả:** Lê Hùng Quang Minh
+
+
 
 > [!NOTE]  
 > **Ghi chú về tài liệu (Tiếng Việt & Tiếng Anh):**  

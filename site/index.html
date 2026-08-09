@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avera Compiler — Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="#" class="logo">
+        <span class="logo-mark">A</span>
+        <span class="logo-text">Avera <span class="version-tag">v0.1.0</span></span>
+      </a>
+    </div>
+    <div class="nav-center">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search documentation...">
+      </div>
+    </div>
+    <div class="nav-right">
+      <button id="langToggleBtn" class="lang-btn" aria-label="Toggle language">
+        <span class="lang-badge">VI</span>
+        <span class="lang-text">Tiếng Việt</span>
+      </button>
+      <a href="https://github.com/dismonjames/Avera" target="_blank" rel="noopener" class="github-link">
+        <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title"><span class="lang-vi">Bắt đầu</span><span class="lang-en hidden">Getting Started</span></div>
+          <ul>
+            <li><a href="#overview" class="nav-link active"><span class="lang-vi">Tổng quan</span><span class="lang-en hidden">Overview</span></a></li>
+            <li><a href="#quickstart" class="nav-link"><span class="lang-vi">Cài đặt & Chạy thử</span><span class="lang-en hidden">Quickstart</span></a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title"><span class="lang-vi">Ngôn ngữ Avera</span><span class="lang-en hidden">Language Reference</span></div>
+          <ul>
+            <li><a href="#syntax" class="nav-link"><span class="lang-vi">Cú pháp cơ bản</span><span class="lang-en hidden">Basic Syntax</span></a></li>
+            <li><a href="#ownership" class="nav-link"><span class="lang-vi">Ownership & Magnet</span><span class="lang-en hidden">Ownership & Magnet</span></a></li>
+            <li><a href="#stdlib" class="nav-link"><span class="lang-vi">Thư viện chuẩn</span><span class="lang-en hidden">Standard Library</span></a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title"><span class="lang-vi">Tham khảo</span><span class="lang-en hidden">Reference</span></div>
+          <ul>
+            <li><a href="#examples" class="nav-link"><span class="lang-vi">Mã nguồn ví dụ</span><span class="lang-en hidden">Code Examples</span></a></li>
+            <li><a href="#diagnostics" class="nav-link"><span class="lang-vi">Mã lỗi Diagnostic</span><span class="lang-en hidden">Diagnostics</span></a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <!-- Section: Overview -->
+      <section id="overview" class="doc-section">
+        <div class="hero">
+          <h1>
+            <span class="lang-vi">Trình Biên Dịch Ngôn Ngữ Avera</span>
+            <span class="lang-en hidden">The Avera Compiler Documentation</span>
+          </h1>
+          <p class="lead">
+            <span class="lang-vi">Avera là ngôn ngữ lập trình hệ thống native AOT, được xây dựng trên Rust với backend Cranelift, cơ chế Ownership kiểm tra luồng dữ liệu và con trỏ Magnet đặc thù.</span>
+            <span class="lang-en hidden">Avera is a stage-0 AOT native systems programming language written in Rust with Cranelift codegen, compile-time ownership tracking, and Magnet pointers.</span>
+          </p>
+          <div class="meta-row">
+            <span class="meta-item">Author: <strong>Lê Hùng Quang Minh</strong></span>
+            <span class="meta-item">License: <strong>GPL-3.0</strong></span>
+          </div>
+        </div>
+
+        <div class="notice-box">
+          <div class="notice-title"><span class="lang-vi">Ghi chú ngôn ngữ tài liệu</span><span class="lang-en hidden">Documentation Language Note</span></div>
+          <p class="lang-vi">Tài liệu hỗ trợ hiển thị song ngữ (Tiếng Việt & English). Một số phần mô tả kỹ thuật chi tiết được soạn thảo với sự hỗ trợ của AI. Bạn có thể sử dụng nút chuyển đổi ngôn ngữ ở góc phải thanh menu.</p>
+          <p class="lang-en hidden">This site supports bilingual documentation (Vietnamese & English). Toggle the language switcher at the top navigation bar at any time.</p>
+        </div>
+
+        <h2><span class="lang-vi">Kiến trúc cốt lõi</span><span class="lang-en hidden">Core Architecture</span></h2>
+        <div class="grid-3">
+          <div class="card">
+            <h3><span class="lang-vi">AOT Native</span><span class="lang-en hidden">AOT Native</span></h3>
+            <p class="lang-vi">Biên dịch mã nguồn thành file object native <code>.o</code> thông qua Cranelift backend và liên kết trực tiếp bằng C linker của hệ thống.</p>
+            <p class="lang-en hidden">Compiles source code to native object files using Cranelift IR and links directly with system C linker.</p>
+          </div>
+          <div class="card">
+            <h3><span class="lang-vi">Magnet Pointer</span><span class="lang-en hidden">Magnet Pointer</span></h3>
+            <p class="lang-vi">Con trỏ Magnet <code>~m</code> gắn trực tiếp với địa chỉ runtime thực tế, cho phép thao tác con trỏ an toàn và truy xuất địa chỉ bộ nhớ.</p>
+            <p class="lang-en hidden">Magnet pointers <code>~m</code> attach to live runtime memory addresses and allow explicit machine address inspection.</p>
+          </div>
+          <div class="card">
+            <h3><span class="lang-vi">Ownership Check</span><span class="lang-en hidden">Ownership Check</span></h3>
+            <p class="lang-vi">Phân tích luồng dữ liệu MIR tự động bắt các lỗi move/drop bộ nhớ và giải phóng tài nguyên xác định không cần Garbage Collector.</p>
+            <p class="lang-en hidden">MIR dataflow analysis verifies memory move and drop states automatically without requiring a Garbage Collector.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Quickstart -->
+      <section id="quickstart" class="doc-section">
+        <h2><span class="lang-vi">Cài đặt & Khởi chạy</span><span class="lang-en hidden">Quickstart & Installation</span></h2>
+
+        <h3><span class="lang-vi">Biên dịch từ mã nguồn</span><span class="lang-en hidden">Building from Source</span></h3>
+        <p class="lang-vi">Yêu cầu môi trường có cài đặt <strong>Rust (edition 2021)</strong> và <strong>C linker (cc/gcc/clang)</strong> trên PATH hệ thống.</p>
+        <p class="lang-en hidden">Requires <strong>Rust (edition 2021)</strong> and a system <strong>C linker (cc/gcc/clang)</strong> available on PATH.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+          <pre><code>git clone https://github.com/dismonjames/Avera.git
+cd Avera
+cargo build --release</code></pre>
+        </div>
+
+        <h3><span class="lang-vi">Chương trình đầu tiên</span><span class="lang-en hidden">First Program</span></h3>
+        <p class="lang-vi">Tạo file <code>hello.av</code>:</p>
+        <p class="lang-en hidden">Create file <code>hello.av</code>:</p>
+
+        <div class="code-block">
+          <div class="code-header"><span>hello.av</span><button class="copy-btn">Copy</button></div>
+          <pre><code>#std.io
+
+action main(): I32 will
+    print("Xin chao, Avera!")
+    return 0
+finish</code></pre>
+        </div>
+
+        <p class="lang-vi">Biên dịch và thực thi ngay lập tức:</p>
+        <p class="lang-en hidden">Compile and run immediately:</p>
+        <div class="code-block">
+          <div class="code-header"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+          <pre><code>./target/release/avera run hello.av</code></pre>
+        </div>
+      </section>
+
+      <!-- Section: Syntax -->
+      <section id="syntax" class="doc-section">
+        <h2><span class="lang-vi">Cú pháp Ngôn ngữ</span><span class="lang-en hidden">Language Syntax</span></h2>
+
+        <h3><span class="lang-vi">Khai báo Hàm (Action)</span><span class="lang-en hidden">Function Declarations (Actions)</span></h3>
+        <p class="lang-vi">Mọi hàm trong Avera được định nghĩa bằng từ khóa <code>action</code> và sử dụng cặp <code>will ... finish</code> cho khối lệnh:</p>
+        <p class="lang-en hidden">Functions in Avera are defined using the <code>action</code> keyword with <code>will ... finish</code> block scopes:</p>
+
+        <div class="code-block">
+          <div class="code-header"><span>Syntax</span><button class="copy-btn">Copy</button></div>
+          <pre><code>action add(a: I32, b: I32): I32 will
+    return a + b
+finish</code></pre>
+        </div>
+
+        <h3><span class="lang-vi">Biến và Vòng lặp</span><span class="lang-en hidden">Variables & Loops</span></h3>
+        <div class="code-block">
+          <div class="code-header"><span>Example</span><button class="copy-btn">Copy</button></div>
+          <pre><code>#std.io
+
+action main(): I32 will
+    let sum: I32 = 0
+    let i: I32 = 1
+
+    while i <= 10 will
+        sum = sum + i
+        i = i + 1
+    finish
+
+    print("Sum 1..10 = ", sum)
+    return 0
+finish</code></pre>
+        </div>
+      </section>
+
+      <!-- Section: Ownership -->
+      <section id="ownership" class="doc-section">
+        <h2><span class="lang-vi">Ownership & Con trỏ Magnet</span><span class="lang-en hidden">Ownership & Magnet Pointers</span></h2>
+        <p class="lang-vi">Con trỏ Magnet <code>~m</code> cho phép gán trực tiếp tham chiếu tới vùng nhớ runtime thực sự:</p>
+        <p class="lang-en hidden">Magnet pointers <code>~m</code> bind directly to runtime memory addresses:</p>
+
+        <div class="code-block">
+          <div class="code-header"><span>magnet.av</span><button class="copy-btn">Copy</button></div>
+          <pre><code>#std.io
+
+action main(): I32 will
+    let value: I32 = 100
+    let ~m = value
+
+    print("Value:", value)
+    print("Address:", ~m.address)
+    return 0
+finish</code></pre>
+        </div>
+      </section>
+
+      <!-- Section: Stdlib -->
+      <section id="stdlib" class="doc-section">
+        <h2><span class="lang-vi">Thư viện chuẩn</span><span class="lang-en hidden">Standard Library</span></h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th><span class="lang-vi">Cung cấp</span><span class="lang-en hidden">Exports</span></th>
+              <th><span class="lang-vi">Mô tả</span><span class="lang-en hidden">Description</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>#std.io</code></td>
+              <td><code>print</code>, <code>write</code>, <code>eprint</code>, <code>input</code></td>
+              <td><span class="lang-vi">Thao tác I/O terminal</span><span class="lang-en hidden">Console input and output</span></td>
+            </tr>
+            <tr>
+              <td><code>#std.core</code></td>
+              <td><code>alloc</code>, <code>free</code>, <code>exit</code></td>
+              <td><span class="lang-vi">Các hàm runtime quản lý bộ nhớ nền tảng</span><span class="lang-en hidden">Core memory and runtime routines</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Section: Examples -->
+      <section id="examples" class="doc-section">
+        <h2><span class="lang-vi">Mã nguồn Ví dụ</span><span class="lang-en hidden">Code Examples</span></h2>
+        <div class="code-block">
+          <div class="code-header"><span>fib.av</span><button class="copy-btn">Copy</button></div>
+          <pre><code>#std.io
+
+action fib(n: I32): I32 will
+    if n <= 1 will
+        return n
+    finish
+    return fib(n - 1) + fib(n - 2)
+finish
+
+action main(): I32 will
+    print("fib(10) =", fib(10))
+    return 0
+finish</code></pre>
+        </div>
+      </section>
+
+      <!-- Section: Diagnostics -->
+      <section id="diagnostics" class="doc-section">
+        <h2><span class="lang-vi">Tra cứu Mã Lỗi (Diagnostics)</span><span class="lang-en hidden">Diagnostics Reference</span></h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Stage</th>
+              <th><span class="lang-vi">Mô tả</span><span class="lang-en hidden">Explanation</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>E0001</code></td><td>Lexer</td><td>Character tokenization error.</td></tr>
+            <tr><td><code>E0100</code></td><td>Parser</td><td>Syntax error during parsing.</td></tr>
+            <tr><td><code>E3001</code></td><td>TypeCheck</td><td>Type mismatch error.</td></tr>
+            <tr><td><code>E4001</code></td><td>Ownership</td><td>Use-after-move error detected by MIR dataflow analysis.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>© 2026 <strong>Lê Hùng Quang Minh</strong>. Licensed under GPL-3.0.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
