@@ -292,37 +292,8 @@ finish
     );
 }
 
-// ===== Ownership: use-of-uninitialized =====
-
-#[test]
-fn cf_use_uninit() {
-    assert_compile_fails(
-        r#"
-#std.io
-action main(): I32 will
-    :x: I32
-    print(x)
-    return 0
-finish
-"#,
-        "uninitialized value",
-    );
-}
-
-#[test]
-fn cf_use_uninit_in_expr() {
-    assert_compile_fails(
-        r#"
-#std.io
-action main(): I32 will
-    :x: I32
-    :y = x + 1
-    return 0
-finish
-"#,
-        "uninitialized value",
-    );
-}
+// Uninitialized locals cannot currently be written in stage-0 source syntax.
+// The ownership invariant itself is covered directly at MIR level in mir_safety.rs.
 
 // ===== Ownership: move then move back (reassign revives) =====
 
