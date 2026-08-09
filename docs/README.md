@@ -1,10 +1,14 @@
 # Avera Compiler
 
-> **Dự án cá nhân / Đồ án Tin học: Trình biên dịch Avera**
-> **Học sinh thực hiện:** Lê Hùng Quang Minh - Lớp 10 (lhquangmink@gmail.com)
+> **Dự án cá nhân - Trình biên dịch Avera**  
+> **Người thực hiện:** Lê Hùng Quang Minh (Học sinh lớp 10) — `lhquangmink@gmail.com`
 
+> [!NOTE]  
+> **Ghi chú về tài liệu (Tiếng Việt & Tiếng Anh):**  
+> Vì mình là học sinh lớp 10 bận đi học hàng ngày nên không có nhiều thời gian để dịch và đồng bộ lại toàn bộ tài liệu. Nhiều phần đặc tả kỹ thuật, kiến trúc và bảng giải thích lỗi mình có dùng AI (ChatGPT / Claude) hỗ trợ soạn thảo hộ nên tài liệu sẽ hơi "thập cẩm" Anh - Việt một chút. Nếu có đoạn nào khó hiểu hoặc chưa nhất quán thì mong mọi người thông cảm giúp mình nhé!
 
 Avera là trình biên dịch AOT native cho ngôn ngữ Avera, viết bằng Rust và sử dụng Cranelift backend.
+
 
 Avera is a small systems
 language with first-class **ownership**, a **Magnet** pointer discipline,
