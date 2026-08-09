@@ -171,16 +171,22 @@ impl<'a> Validator<'a> {
                 self.check_target(*b, nblocks);
             }
             Terminator::SwitchInt {
-                targets, otherwise, ..
+                discr,
+                targets,
+                otherwise,
             } => {
+                self.check_place(discr);
                 for (_, t) in targets {
                     self.check_target(*t, nblocks);
                 }
                 self.check_target(*otherwise, nblocks);
             }
             Terminator::Switch {
-                targets, otherwise, ..
+                discr,
+                targets,
+                otherwise,
             } => {
+                self.check_place(discr);
                 for (_, t) in targets {
                     self.check_target(*t, nblocks);
                 }
@@ -188,7 +194,12 @@ impl<'a> Validator<'a> {
                     self.check_target(*o, nblocks);
                 }
             }
-            Terminator::Return { .. } | Terminator::Abort | Terminator::Unreachable => {}
+            Terminator::Return { value } => {
+                if let Some(value) = value {
+                    self.check_place(value);
+                }
+            }
+            Terminator::Abort | Terminator::Unreachable => {}
         }
     }
 
