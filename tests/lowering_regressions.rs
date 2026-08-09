@@ -1,6 +1,6 @@
 mod common;
 
-use common::{assert_compile_fails, assert_run, build_and_run_full};
+use common::{assert_compile_fails, assert_run};
 
 #[test]
 fn range_for_continue_still_advances_iterator() {
@@ -69,8 +69,8 @@ finish
 }
 
 #[test]
-fn eprint_really_uses_stderr() {
-    let (stdout, stderr) = build_and_run_full(
+fn eprint_is_rejected_instead_of_silently_using_stdout() {
+    assert_compile_fails(
         r#"
 #std.io
 action main(): I32 will
@@ -78,9 +78,8 @@ action main(): I32 will
     return 0
 finish
 "#,
+        "eprint` is not implemented as stderr output",
     );
-    assert_eq!(stdout, "");
-    assert_eq!(stderr, "err 42\n");
 }
 
 #[test]
