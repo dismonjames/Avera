@@ -5,7 +5,7 @@ use crate::mir::place::{Place, PlaceElem};
 use crate::mir::rvalue::Rvalue;
 use crate::mir::terminator::Terminator;
 use crate::symbol::LocalId;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum State {
@@ -29,9 +29,9 @@ impl State {
 
 type StateMap = HashMap<LocalId, State>;
 
-    // kiem tra move / drop state cua bien
-    // NOTE: khong cho dung bien sau khi da move
-    pub fn check_ownership(body: &Body, diags: &mut DiagnosticList) {
+// kiem tra move / drop state cua bien
+// NOTE: khong cho dung bien sau khi da move
+pub fn check_ownership(body: &Body, diags: &mut DiagnosticList) {
     let mut analysis = OwnershipAnalysis::new(body, diags);
     analysis.run();
 }
@@ -39,7 +39,6 @@ type StateMap = HashMap<LocalId, State>;
 struct OwnershipAnalysis<'a> {
     body: &'a Body,
     diags: &'a mut DiagnosticList,
-    preds: Vec<HashSet<usize>>,
     in_states: Vec<StateMap>,
     in_worklist: Vec<bool>,
 }
@@ -47,24 +46,19 @@ struct OwnershipAnalysis<'a> {
 impl<'a> OwnershipAnalysis<'a> {
     fn new(body: &'a Body, diags: &'a mut DiagnosticList) -> Self {
         let nblocks = body.blocks.len();
-        let mut preds: Vec<HashSet<usize>> = vec![HashSet::new(); nblocks];
-        for (i, b) in body.blocks.iter().enumerate() {
-            for succ in successors(&b.term) {
-                if succ < nblocks {
-                    preds[succ].insert(i);
-                }
-            }
-        }
         Self {
             body,
             diags,
-            preds,
             in_states: vec![HashMap::new(); nblocks],
-            in_worklist: vec![true; nblocks],
+            in_worklist: vec![false; nblocks],
         }
     }
 
     fn run(&mut self) {
+        if self.body.blocks.is_empty() {
+            return;
+        }
+
         // Initialize entry block in-state: params are Init, others are Uninit.
         for &p in &self.body.params {
             self.in_states[0].insert(p, State::Init);
@@ -73,6 +67,7 @@ impl<'a> OwnershipAnalysis<'a> {
             self.in_states[0].entry(local.id).or_insert(State::Uninit);
         }
 
+        self.in_worklist[0] = true;
         let mut worklist: Vec<usize> = vec![0];
         while let Some(idx) = worklist.pop() {
             self.in_worklist[idx] = false;
