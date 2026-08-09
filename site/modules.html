@@ -41,9 +41,9 @@
     <nav class="sidebar-nav">
       <div class="nav-section">
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
-          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link active"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
-          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link active"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
           <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
     </nav>
@@ -51,46 +51,30 @@
   <main class="main">
     
 <div class="doc-section">
-  <h1><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></h1>
-  <p class="lead"><span class="vi">Hướng dẫn build trình biên dịch từ mã nguồn và viết chương trình Avera đầu tiên.</span><span class="en hidden">Guide to building the compiler from source and writing your first Avera program.</span></p>
+  <h1><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects (.mav)</span></h1>
+  <p class="vi">Kiến trúc project của Avera phân tách rạch ròi giữa giao diện public và phần hiện thực thông qua các file <code>.mav</code>.</p>
+  <p class="en hidden">Avera's project architecture strictly separates public interfaces from implementation via <code>.mav</code> files.</p>
 
-  <h2><span class="vi">1. Yêu cầu hệ thống</span><span class="en hidden">1. Prerequisites</span></h2>
+  <h2><span class="vi">Kiến trúc file</span><span class="en hidden">File Architecture</span></h2>
   <ul>
-    <li><strong>Rust stable</strong> &amp; Cargo: <span class="vi">cài qua</span><span class="en hidden">install via</span> <code>https://rustup.rs</code>.</li>
-    <li><strong>C linker</strong> (<code>gcc</code> / <code>clang</code> / <code>cc</code>).</li>
+    <li><strong><code>.mav</code> (Module Contract)</strong>: <span class="vi">Khai báo danh sách file nguồn và interface công khai (public interface).</span><span class="en hidden">Declares source files and public interfaces.</span></li>
+    <li><strong><code>.av</code> (Implementation)</strong>: <span class="vi">Chứa mã nguồn thực thi.</span><span class="en hidden">Contains the actual implementation code.</span></li>
   </ul>
 
-  <h2><span class="vi">2. Build từ mã nguồn</span><span class="en hidden">2. Build from Source</span></h2>
-  <div class="cb">
-  <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
-  <pre><code>git clone https://github.com/dismonjames/Avera.git
-cd Avera
-
-# Build release binary
-cargo build --release
-
-# Xác nhận binary
-./target/release/avera version</code></pre>
-</div>
-
-  <h2><span class="vi">3. Hello World</span><span class="en hidden">3. Hello World</span></h2>
-  <p class="vi">Tạo file <code>hello.av</code>. Sử dụng từ khóa <code>action</code> cho hàm và cặp <code>will</code>...<code>finish</code> cho khối lệnh.</p>
-  <p class="en hidden">Create <code>hello.av</code>. Use the <code>action</code> keyword for functions and <code>will</code>...<code>finish</code> for blocks.</p>
+  <p class="vi">File <code>.mav</code> thay thế cho file header truyền thống và file config (như <code>avera.toml</code> không bắt buộc nếu dùng <code>.mav</code>).</p>
+  <p class="en hidden">The <code>.mav</code> file replaces traditional header files and acts as the module manifest.</p>
 
   <div class="cb">
-  <div class="cb-head"><span>hello.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>#std.io
+  <div class="cb-head"><span>sys.mav</span><button class="copy-btn">Copy</button></div>
+  <pre><code>// sys.mav
+module "sys"
 
-action main(): I32 will
-    print("Hello from Avera")
-    return 0
-finish</code></pre>
-</div>
+// Liệt kê các file .av thuộc module này
+source "os_linux.av"
+source "fs.av"
 
-  <div class="cb">
-  <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
-  <pre><code>./target/release/avera run hello.av
-# Output: Hello from Avera</code></pre>
+// Chỉ định interface công khai ra bên ngoài
+export action read_file(path: &Text): Result<Text, I32></code></pre>
 </div>
 </div>
 

@@ -14,7 +14,7 @@
   <div class="nav-l">
     <a href="index.html" class="logo">
       <div class="logo-mark">A</div>
-      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0-dev</span></span>
     </a>
   </div>
   <div class="nav-c">
@@ -43,7 +43,7 @@
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
           <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
-          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
           <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link active"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
     </nav>
@@ -52,45 +52,8 @@
     
 <div class="doc-section">
   <h1><span class="vi">Ví dụ Mã nguồn</span><span class="en hidden">Code Examples</span></h1>
-  <p class="lead"><span class="vi">Các chương trình mẫu thực tế được lấy trực tiếp từ thư mục examples/ của repository.</span><span class="en hidden">Working programs taken directly from the repository's examples/ directory.</span></p>
 
-  <h2>1. Hello World</h2>
-  <div class="cb">
-  <div class="cb-head"><span>hello.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>#std.io
-
-action main(): I32 will
-    print("Hello from Avera")
-    return 0
-finish</code></pre>
-</div>
-
-  <h2>2. <span class="vi">Tính dãy Fibonacci (dùng vòng lặp while)</span><span class="en hidden">Fibonacci Sequence (while loop)</span></h2>
-  <p class="vi">Chương trình thực tế từ <code>examples/fib.av</code>. Chú ý cách khai báo biến bằng <code>:</code> và compound assignment <code>+=</code>:</p>
-  <p class="en hidden">Actual program from <code>examples/fib.av</code>. Notice variable declaration with <code>:</code> and compound assignment <code>+=</code>:</p>
-  <div class="cb">
-  <div class="cb-head"><span>fib.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>#std.io
-
-action main(): I32 will
-    :a = 0
-    :b = 1
-    :t = 0
-    :i = 0
-    while i < 10 will
-        t = a + b
-        a = b
-        b = t
-        i += 1
-    finish
-    print("fib(10) =", a)
-    return 0
-finish</code></pre>
-</div>
-
-  <h2>3. FizzBuzz</h2>
-  <p class="vi">Chú ý: if/else if/else chỉ có một <code>finish</code> duy nhất ở cuối:</p>
-  <p class="en hidden">Note: the entire if/else if/else chain has only one <code>finish</code> at the end:</p>
+  <h2>1. FizzBuzz</h2>
   <div class="cb">
   <div class="cb-head"><span>fizzbuzz.av</span><button class="copy-btn">Copy</button></div>
   <pre><code>#std.io
@@ -111,21 +74,21 @@ action main(): I32 will
 finish</code></pre>
 </div>
 
-  <h2>4. <span class="vi">Magnet Pointer — đọc địa chỉ bộ nhớ</span><span class="en hidden">Magnet Pointer — read memory address</span></h2>
+  <h2>2. Magnet Pointer</h2>
   <div class="cb">
   <div class="cb-head"><span>magnet.av</span><button class="copy-btn">Copy</button></div>
   <pre><code>#std.io
 
 action main(): I32 will
-    :value = 42
+    ::value = 42
     ~m = value
     print("Value:", value)
-    print("Address:", ~m.address)
+    print("Address:", ~m.address) // Lấy Address<T>
     return 0
 finish</code></pre>
 </div>
 
-  <h2>5. <span class="vi">Shape (Struct) và Method</span><span class="en hidden">Shape (Struct) and Method</span></h2>
+  <h2>3. Shape & Method</h2>
   <div class="cb">
   <div class="cb-head"><span>shape.av</span><button class="copy-btn">Copy</button></div>
   <pre><code>#std.io
@@ -135,10 +98,10 @@ shape User will
     age:  I32
 finish
 
-action User.greet(u: User): I32 will
+action User.greet(&self): I32 will
     print("User:")
-    print("name:", u.name)
-    print("age:", u.age)
+    print("name:", self.name)
+    print("age:", self.age)
     return 0
 finish
 

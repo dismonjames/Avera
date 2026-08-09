@@ -14,7 +14,7 @@
   <div class="nav-l">
     <a href="index.html" class="logo">
       <div class="logo-mark">A</div>
-      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0-dev</span></span>
     </a>
   </div>
   <div class="nav-c">
@@ -43,7 +43,7 @@
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
           <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
-          <ul><li><a href="syntax.html" class="nav-link active"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="syntax.html" class="nav-link active"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
           <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
     </nav>
@@ -52,217 +52,113 @@
     
 <div class="doc-section">
   <h1><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></h1>
-  <p class="lead"><span class="vi">Toàn bộ cú pháp câu lệnh, biểu thức, toán tử và khai báo hàm trong Avera — trích dẫn trực tiếp từ parser.</span><span class="en hidden">All statement syntax, expressions, operators and function declarations in Avera — extracted directly from the parser source.</span></p>
 
-  <h2><span class="vi">1. Khai báo biến (Owner Binding)</span><span class="en hidden">1. Variable Declarations (Owner Bindings)</span></h2>
-  <p class="vi">Avera dùng ký hiệu <code>:</code> (dấu hai chấm) thay cho từ khóa như <code>let</code> hay <code>var</code>. Đây là cú pháp khai báo biến chính trong ngôn ngữ:</p>
-  <p class="en hidden">Avera uses the <code>:</code> prefix instead of keywords like <code>let</code> or <code>var</code>. This is the main variable binding syntax:</p>
+  <h2><span class="vi">1. Khai báo biến (Owner Binding)</span><span class="en hidden">1. Variable Declarations</span></h2>
+  <p class="vi">Avera dùng <code>:</code> cho biến thay đổi được ownership và <code>::</code> cho biến bất biến (immutable owner). Không dùng từ khóa <code>let</code> hay <code>var</code>.</p>
+  <p class="en hidden">Avera uses <code>:</code> for standard owner bindings and <code>::</code> for immutable owners. There are no <code>let</code> or <code>var</code> keywords.</p>
 
   <div class="cb">
   <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code>:name = expr              # Khai báo biến, kiểu được suy ra tự động
-:name: Type = expr      # Khai báo biến với kiểu tường minh
-::name = expr           # Khai báo hằng số (const binding)</code></pre>
+  <pre><code>:name = expr              // Khai báo biến, tự suy luận kiểu
+:name: Type = expr      // Khai báo có kiểu tường minh
+::name = expr           // Khai báo biến bất biến (immutable owner)</code></pre>
 </div>
 
   <div class="cb">
   <div class="cb-head"><span>Example</span><button class="copy-btn">Copy</button></div>
-  <pre><code>:x = 42                  # x kiểu I32
-:name: Text = "Avera"   # name kiểu Text, tường minh
-::PI = 3.14159          # hằng số PI</code></pre>
+  <pre><code>:x = 42
+::PI = 3.14159          // PI không thể bị mutate sâu hay lấy mutable borrow (&!)</code></pre>
 </div>
-
-  <div class="notice notice-warn">
-    <div class="nt"><span class="vi">Quan trọng</span><span class="en hidden">Important</span></div>
-    <p class="vi">Avera không có từ khóa <code>let</code>. Khai báo biến là <code>:tên = giá_trị</code>.</p>
-    <p class="en hidden">Avera has no <code>let</code> keyword. Variable declarations use <code>:name = value</code>.</p>
-  </div>
 
   <h2><span class="vi">2. Hàm (Action)</span><span class="en hidden">2. Functions (Actions)</span></h2>
-  <p class="vi">Hàm trong Avera gọi là <strong>action</strong>. Tham số có định dạng <code>name: Type</code>. Khối thân hàm mở bằng <code>will</code> và đóng bằng <code>finish</code>.</p>
-  <p class="en hidden">Functions in Avera are called <strong>actions</strong>. Parameters use <code>name: Type</code> format. The body opens with <code>will</code> and closes with <code>finish</code>.</p>
+  <p class="vi">Khối hàm mở bằng <code>will</code> và đóng bằng <code>finish</code>.</p>
+  <p class="en hidden">Function blocks open with <code>will</code> and close with <code>finish</code>.</p>
 
   <div class="cb">
   <div class="cb-head"><span>Example</span><button class="copy-btn">Copy</button></div>
-  <pre><code># Hàm không có tham số
-action main(): I32 will
-    return 0
-finish
-
-# Hàm có tham số
-action add(a: I32, b: I32): I32 will
+  <pre><code>action add(a: I32, b: I32): I32 will
     return a + b
-finish
-
-# Hàm không có kiểu trả về (unit type)
-action say_hi(name: Text) will
-    print("Hi,", name)
 finish</code></pre>
 </div>
 
-  <h2><span class="vi">3. Câu lệnh Điều kiện (If / Else)</span><span class="en hidden">3. Conditional Statements (If / Else)</span></h2>
-  <p class="vi">Cú pháp if/else trong Avera: điều kiện tiếp theo là <code>will</code>, khối lệnh kết thúc bằng <code>finish</code>. Lưu ý: chỉ có <strong>một từ khóa <code>finish</code> ở cuối</strong> toàn bộ chuỗi if/else.</p>
-  <p class="en hidden">Avera if/else syntax: condition is followed by <code>will</code>, the entire chain closes with a <strong>single <code>finish</code> at the end</strong>.</p>
+  <h2><span class="vi">3. Điều kiện (If / Else)</span><span class="en hidden">3. Conditionals</span></h2>
+  <p class="vi">Chỉ có một từ khóa <code>finish</code> ở cuối chuỗi điều kiện.</p>
+  <p class="en hidden">There is only one <code>finish</code> keyword at the end of the conditional chain.</p>
 
   <div class="cb">
   <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code># Chỉ if
-if condition will
-    ...
-finish
-
-# if / else
-if condition will
-    ...
-else
-    ...
-finish
-
-# if / else if / else (một finish duy nhất ở cuối)
-if n % 15 == 0 will
+  <pre><code>if n % 15 == 0 will
     print("FizzBuzz")
 else if n % 3 == 0 will
     print("Fizz")
-else if n % 5 == 0 will
-    print("Buzz")
 else
     print(n)
 finish</code></pre>
 </div>
 
-  <h2><span class="vi">4. Vòng lặp While / Loop</span><span class="en hidden">4. While / Loop</span></h2>
+  <h2><span class="vi">4. Vòng lặp</span><span class="en hidden">4. Loops</span></h2>
   <div class="cb">
   <div class="cb-head"><span>Example</span><button class="copy-btn">Copy</button></div>
-  <pre><code># While: lặp khi điều kiện còn đúng
-:i = 0
+  <pre><code>// While loop
 while i < 10 will
-    print(i)
     i += 1
 finish
 
-# Loop: lặp vô hạn, thoát bằng break
+// Loop (vô hạn)
 loop will
-    :line = input()
-    if line == "quit" will
-        break
-    finish
-    print(line)
-finish</code></pre>
-</div>
+    break
+finish
 
-  <h2><span class="vi">5. Vòng lặp For / In</span><span class="en hidden">5. For / In Loop</span></h2>
-  <p class="vi">Vòng lặp <code>for</code> duyệt qua một iterator hoặc range. Range dùng cú pháp <code>a..b</code>.</p>
-  <p class="en hidden">The <code>for</code> loop iterates over an iterator or range. Ranges use <code>a..b</code> syntax.</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code># Duyệt range (ví dụ từ source: for i in 1..17)
-for i in 1..17 will
+// For loop
+for i in 1..10 will
     print(i)
-finish
-
-# Duyệt với prefix mode
-for &item in collection will       # duyệt borrow (shared)
-    print(item)
-finish
-
-for &!item in collection will      # duyệt borrow mutable
-    item = item + 1
-finish
-
-for ^item in collection will       # duyệt move (lấy ownership)
-    process(item)
 finish</code></pre>
 </div>
 
-  <h2><span class="vi">6. Match (Pattern Matching)</span><span class="en hidden">6. Match (Pattern Matching)</span></h2>
-  <p class="vi">Match dùng để so khớp pattern trên một giá trị, thường dùng với kiểu <code>choice</code> (enum).</p>
-  <p class="en hidden">Match performs pattern matching on a value, typically used with <code>choice</code> (enum) types.</p>
-
+  <h2><span class="vi">5. Match</span><span class="en hidden">5. Match</span></h2>
   <div class="cb">
   <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
   <pre><code>match value will
-    VariantName(a, b) => print(a, b)
-    OtherVariant      => print("other")
-    _                 => print("wildcard")
+    .some(x) => print(x)
+    .none    => print("Empty")
 finish</code></pre>
 </div>
 
-  <h2><span class="vi">7. Toán tử & Thứ tự ưu tiên</span><span class="en hidden">7. Operators & Precedence</span></h2>
-  <p class="vi">Thứ tự ưu tiên từ thấp đến cao (trích từ parser/expr.rs):</p>
-  <p class="en hidden">Precedence from lowest to highest (extracted from parser/expr.rs):</p>
-
+  <h2><span class="vi">6. Toán tử</span><span class="en hidden">6. Operators</span></h2>
   <table class="tbl">
-    <thead><tr><th><span class="vi">Mức</span><span class="en hidden">Level</span></th><th><span class="vi">Toán tử</span><span class="en hidden">Operator</span></th><th><span class="vi">Mô tả</span><span class="en hidden">Description</span></th></tr></thead>
+    <thead><tr><th><span class="vi">Mức</span><span class="en hidden">Level</span></th><th><span class="vi">Toán tử</span><span class="en hidden">Operator</span></th></tr></thead>
     <tbody>
-      <tr><td>1 (thấp nhất)</td><td><code>||</code></td><td>Logical OR</td></tr>
-      <tr><td>2</td><td><code>&amp;&amp;</code></td><td>Logical AND</td></tr>
-      <tr><td>3</td><td><code>== != &lt; &lt;= &gt; &gt;=</code></td><td><span class="vi">So sánh</span><span class="en hidden">Comparison</span></td></tr>
-      <tr><td>4</td><td><code>|</code></td><td>Bitwise OR</td></tr>
-      <tr><td>5</td><td><code>^</code></td><td>Bitwise XOR</td></tr>
-      <tr><td>6</td><td><code>&amp;</code></td><td>Bitwise AND</td></tr>
-      <tr><td>7</td><td><code>&lt;&lt; &gt;&gt;</code></td><td>Bit Shift</td></tr>
-      <tr><td>8</td><td><code>+ -</code></td><td><span class="vi">Cộng / Trừ</span><span class="en hidden">Addition / Subtraction</span></td></tr>
-      <tr><td>9 (cao nhất)</td><td><code>* / %</code></td><td><span class="vi">Nhân / Chia / Modulo</span><span class="en hidden">Multiply / Divide / Modulo</span></td></tr>
+      <tr><td>1 (thấp)</td><td><code>||</code></td></tr>
+      <tr><td>2</td><td><code>&amp;&amp;</code></td></tr>
+      <tr><td>3</td><td><code>== != &lt; &lt;= &gt; &gt;=</code></td></tr>
+      <tr><td>4</td><td><code>|</code></td></tr>
+      <tr><td>5</td><td><code>^</code></td></tr>
+      <tr><td>6</td><td><code>&amp;</code></td></tr>
+      <tr><td>7</td><td><code>&lt;&lt; &gt;&gt;</code></td></tr>
+      <tr><td>8</td><td><code>+ -</code></td></tr>
+      <tr><td>9 (cao)</td><td><code>* / %</code></td></tr>
     </tbody>
   </table>
 
-  <h3><span class="vi">Toán tử một ngôi (Unary)</span><span class="en hidden">Unary Operators</span></h3>
+  <h3><span class="vi">Toán tử một ngôi</span><span class="en hidden">Unary Operators</span></h3>
   <table class="tbl">
-    <thead><tr><th><span class="vi">Cú pháp</span><span class="en hidden">Syntax</span></th><th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th></tr></thead>
+    <thead><tr><th><span class="vi">Toán tử</span><span class="en hidden">Operator</span></th><th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th></tr></thead>
     <tbody>
       <tr><td><code>!expr</code></td><td>Logical NOT</td></tr>
-      <tr><td><code>-expr</code></td><td><span class="vi">Số âm (Negate)</span><span class="en hidden">Negation</span></td></tr>
-      <tr><td><code>&amp;expr</code></td><td><span class="vi">Borrow dùng chung (Shared Borrow)</span><span class="en hidden">Shared borrow</span></td></tr>
-      <tr><td><code>&amp;!expr</code></td><td><span class="vi">Borrow có thể ghi (Mutable Borrow)</span><span class="en hidden">Mutable borrow</span></td></tr>
-      <tr><td><code>^expr</code></td><td><span class="vi">Di chuyển ownership (Move)</span><span class="en hidden">Move ownership</span></td></tr>
+      <tr><td><code>-expr</code></td><td><span class="vi">Số âm</span><span class="en hidden">Negate</span></td></tr>
+      <tr><td><code>&amp;expr</code></td><td><span class="vi">Borrow chỉ đọc</span><span class="en hidden">Shared borrow</span></td></tr>
+      <tr><td><code>&amp;!expr</code></td><td><span class="vi">Borrow đọc/ghi</span><span class="en hidden">Mutable borrow</span></td></tr>
+      <tr><td><code>^expr</code></td><td><span class="vi">Di chuyển ownership</span><span class="en hidden">Move ownership</span></td></tr>
     </tbody>
   </table>
 
-  <h3><span class="vi">Gán có toán tử (Compound Assignment)</span><span class="en hidden">Compound Assignment</span></h3>
-  <div class="cb">
-  <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code>x += 1    # x = x + 1
-x -= 1    # x = x - 1
-x *= 2    # x = x * 2
-x /= 2    # x = x / 2
-x %= 3    # x = x % 3
-x &= mask # x = x & mask
-x |= flag # x = x | flag
-x ^= bit  # x = x ^ bit</code></pre>
-</div>
-
-  <h2><span class="vi">8. Các biểu thức đặc biệt</span><span class="en hidden">8. Special Expressions</span></h2>
-  <table class="tbl">
-    <thead><tr><th><span class="vi">Cú pháp</span><span class="en hidden">Syntax</span></th><th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th></tr></thead>
-    <tbody>
-      <tr><td><code>expr :&gt; Type</code></td><td><span class="vi">Type cast — ép kiểu biểu thức sang Type.</span><span class="en hidden">Type cast expression to Type.</span></td></tr>
-      <tr><td><code>expr?</code></td><td><span class="vi">Try — lan truyền lỗi (dùng với kiểu Outcome).</span><span class="en hidden">Try / error propagation (used with Outcome type).</span></td></tr>
-      <tr><td><code>expr!</code></td><td><span class="vi">Drop sớm — giải phóng ownership ngay lập tức.</span><span class="en hidden">Early drop — immediately release ownership.</span></td></tr>
-      <tr><td><code>a..b</code></td><td><span class="vi">Range từ a đến b (dùng trong for / slice).</span><span class="en hidden">Range from a to b (used in for / slice).</span></td></tr>
-      <tr><td><code>base[i]</code></td><td><span class="vi">Chỉ mục mảng (Index).</span><span class="en hidden">Array/slice index.</span></td></tr>
-      <tr><td><code>base[a..b]</code></td><td><span class="vi">Cắt slice.</span><span class="en hidden">Slice.</span></td></tr>
-      <tr><td><code>none</code></td><td><span class="vi">Giá trị Maybe rỗng (None variant).</span><span class="en hidden">The empty Maybe value.</span></td></tr>
-    </tbody>
-  </table>
-
-  <h2><span class="vi">9. Directive (#)</span><span class="en hidden">9. Directives (#)</span></h2>
-  <p class="vi">Directive bắt đầu bằng dấu <code>#</code>, đặt ở đầu file để khai báo module, import thư viện và cấu hình biên dịch:</p>
-  <p class="en hidden">Directives start with <code>#</code> and appear at the top of a file to declare modules, import libraries, and configure compilation:</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code>#std.io               # Import module I/O chuẩn
-#std.core             # Import module core runtime
-#std.io.*             # Import tất cả từ std.io
-#std.io as io         # Import với alias
-
-#module my.pkg        # Khai báo tên module của file này
-#header "file.h"      # Include C header (dùng với FFI)
-#source "file.c"      # Link C source file
-#link "libname"       # Link thư viện native
-#depends other.mod    # Khai báo dependency</code></pre>
-</div>
+  <h2><span class="vi">7. Biểu thức đặc biệt</span><span class="en hidden">7. Special Expressions</span></h2>
+  <ul>
+    <li><code>expr :&gt; Type</code>: <span class="vi">Ép kiểu (Type cast)</span><span class="en hidden">Type cast</span></li>
+    <li><code>expr?</code>: <span class="vi">Lan truyền lỗi (Try)</span><span class="en hidden">Try / error propagation</span></li>
+    <li><code>expr!</code>: <span class="vi">Giải phóng sớm (Explicit Drop)</span><span class="en hidden">Early explicit drop</span></li>
+    <li><code>.variant</code>: <span class="vi">Khai báo giá trị Choice chuẩn (ví dụ `.some(1)`, `.none`)</span><span class="en hidden">Canonical choice variant (e.g. `.some(1)`, `.none`)</span></li>
+  </ul>
 </div>
 
     <footer class="footer">

@@ -14,7 +14,7 @@
   <div class="nav-l">
     <a href="index.html" class="logo">
       <div class="logo-mark">A</div>
-      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0-dev</span></span>
     </a>
   </div>
   <div class="nav-c">
@@ -43,7 +43,7 @@
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
           <ul><li><a href="index.html" class="nav-link active"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
-          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
           <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
     </nav>
@@ -53,7 +53,7 @@
 <div class="hero doc-section">
   <h1><span class="vi">Trình Biên Dịch Ngôn Ngữ Avera</span><span class="en hidden">The Avera Programming Language</span></h1>
   <p class="lead">
-    <span class="vi">Avera là ngôn ngữ lập trình hệ thống biên dịch trực tiếp ra mã máy (AOT) sử dụng Cranelift backend, cơ chế kiểm tra Ownership qua phân tích luồng dữ liệu MIR tại thời điểm biên dịch, và hệ thống con trỏ Magnet đặc thù.</span><span class="en hidden">Avera is an ahead-of-time (AOT) native systems language compiled to machine code via Cranelift, with compile-time memory safety enforced through MIR dataflow analysis and a unique Magnet pointer discipline.</span>
+    <span class="vi">Avera là ngôn ngữ lập trình hệ thống biên dịch trực tiếp ra mã máy (AOT) qua Cranelift, với cơ chế an toàn bộ nhớ tĩnh không dùng GC qua MIR dataflow và hệ thống Magnet.</span><span class="en hidden">Avera is an ahead-of-time (AOT) native systems language compiled via Cranelift, featuring GC-free static memory safety through MIR dataflow and the Magnet system.</span>
   </p>
   <div class="meta">
     <span><span class="vi">Tác giả</span><span class="en hidden">Author</span>: <strong>Lê Hùng Quang Minh</strong></span>
@@ -64,49 +64,36 @@
 
 <div class="notice">
   <div class="nt"><span class="vi">Ghi chú về tài liệu</span><span class="en hidden">Documentation Note</span></div>
-  <p class="vi">Tài liệu hỗ trợ chuyển đổi Tiếng Việt / Tiếng Anh. Các trang được chia theo chủ đề để bạn dễ tra cứu. Mọi cú pháp trong tài liệu này được trích xuất trực tiếp từ mã nguồn Rust của trình biên dịch — không có nội dung suy đoán.</p>
-  <p class="en hidden">This documentation supports Vietnamese / English toggle. Each page covers a dedicated topic. All syntax shown here is extracted directly from the compiler Rust source — nothing is made up.</p>
+  <p class="vi">Tài liệu hỗ trợ chuyển đổi Tiếng Việt / Tiếng Anh. Các trang được chia theo chủ đề để bạn dễ tra cứu.</p>
+  <p class="en hidden">This documentation supports Vietnamese / English toggle. Each page covers a dedicated topic.</p>
 </div>
 
 <div class="doc-section">
   <h2><span class="vi">Sơ đồ pipeline biên dịch</span><span class="en hidden">Compiler Pipeline</span></h2>
   <div class="pipeline">
-    .av source → Lexer (token stream) → Parser (AST) → Resolver (name resolution) →
-    TypeChecker → Ownership+Borrow+Magnet check (MIR) → Drop Elaboration → Cranelift IR → .o → Linker → native binary
+    .av/.mav source → Lexer → Parser (AST) → Resolver → TypeChecker →
+    Ownership/Borrow/Magnet (MIR) → Drop Elaboration → Cranelift IR → .o → Linker
   </div>
-  <p class="vi">Toàn bộ quá trình này xảy ra một lần, không có Garbage Collector, không có Virtual Machine.</p>
-  <p class="en hidden">This entire pipeline runs once per program. There is no garbage collector and no virtual machine.</p>
+  <p class="vi">Toàn bộ quá trình này diễn ra tĩnh (compile-time), không có Virtual Machine hay Garbage Collector.</p>
+  <p class="en hidden">This entire pipeline is static (compile-time). There is no VM or GC.</p>
 
   <div class="grid3">
     <div class="card">
       <h3><span class="vi">Biên dịch AOT native</span><span class="en hidden">AOT Native Compilation</span></h3>
-      <p class="vi">Cranelift sinh file object <code>.o</code> từ IR, sau đó hệ thống C linker (<code>cc</code>) liên kết thành file thực thi. Không cần VM hay GC.</p>
-      <p class="en hidden">Cranelift emits <code>.o</code> object files from its IR. The system C linker (<code>cc</code>) produces the final binary. No VM or GC.</p>
+      <p class="vi">Cranelift sinh file object <code>.o</code> từ IR. System linker (như <code>cc</code>) liên kết thành file thực thi native.</p>
+      <p class="en hidden">Cranelift emits <code>.o</code> object files. A system linker (like <code>cc</code>) produces the final native binary.</p>
     </div>
     <div class="card">
-      <h3><span class="vi">Ownership & Drop xác định</span><span class="en hidden">Deterministic Ownership & Drop</span></h3>
-      <p class="vi">Biến chuyển qua các trạng thái <code>Uninit → Init → Moved/Dropped</code>. Drop Elaborator chèn lệnh giải phóng chính xác vào CFG trước khi sinh mã.</p>
-      <p class="en hidden">Variables move through states <code>Uninit → Init → Moved/Dropped</code>. Drop Elaborator inserts precise deallocation into the MIR CFG before codegen.</p>
+      <h3><span class="vi">An toàn không cần GC</span><span class="en hidden">GC-Free Safety</span></h3>
+      <p class="vi">Kiểm tra tĩnh (static checks) ngăn chặn truy cập vùng nhớ sau khi chuyển quyền sở hữu (use-after-move) và tự động giải phóng (drop) đúng thời điểm.</p>
+      <p class="en hidden">Static checks prevent use-after-move errors and automatically insert safe deallocations (drops) at the right time.</p>
     </div>
     <div class="card">
-      <h3><span class="vi">Con trỏ Magnet (~)</span><span class="en hidden">Magnet Pointer (~)</span></h3>
-      <p class="vi">Con trỏ <code>~m</code> gắn vào địa chỉ runtime thực của một biến. Trình biên dịch kiểm tra tĩnh để đảm bảo magnet không trỏ vào vùng nhớ đã bị move hay drop.</p>
-      <p class="en hidden">A <code>~m</code> magnet pointer attaches to the live runtime address of a variable. The compiler statically verifies it never points to a moved or dropped location.</p>
+      <h3><span class="vi">Hệ thống Magnet</span><span class="en hidden">Magnet System</span></h3>
+      <p class="vi">Lưu giữ liên kết (retained route) tới storage thực sự, đảm bảo an toàn tĩnh khi tương tác gần với phần cứng hoặc hệ điều hành.</p>
+      <p class="en hidden">Retains a route to physical storage, guaranteeing static safety while allowing low-level interactions.</p>
     </div>
   </div>
-</div>
-
-<div class="doc-section">
-  <h2><span class="vi">Điều hướng nhanh</span><span class="en hidden">Quick Navigation</span></h2>
-  <ul class="qlinks">
-    <li><a href="getting-started.html"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a> — <span class="vi">Hướng dẫn build từ source và chạy chương trình Hello World đầu tiên.</span><span class="en hidden">Build from source and run your first Hello World program.</span></li>
-    <li><a href="syntax.html"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a> — <span class="vi">Khai báo biến (<code>:name = val</code>), hàm action, if/while/for/match, toán tử.</span><span class="en hidden">Variable bindings (<code>:name = val</code>), action functions, if/while/for/match, operators.</span></li>
-    <li><a href="types.html"><span class="vi">Kiểu dữ liệu</span><span class="en hidden">Types</span></a> — <span class="vi">Các kiểu nguyên thủy, <code>shape</code> (struct), <code>choice</code> (enum), Magnet type, Borrow type.</span><span class="en hidden">Primitives, <code>shape</code> (structs), <code>choice</code> (enums), Magnet types, Borrow types.</span></li>
-    <li><a href="ownership-magnet.html"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a> — <span class="vi">Quy tắc move/borrow/drop, cú pháp con trỏ Magnet và checker.</span><span class="en hidden">Move/borrow/drop rules, Magnet pointer syntax and checker rules.</span></li>
-    <li><a href="stdlib.html"><span class="vi">Thư viện chuẩn</span><span class="en hidden">Standard Library</span></a> — <span class="vi">Các hàm <code>print</code>, <code>input</code>, <code>alloc</code>, <code>exit</code> được cung cấp bởi compiler runtime.</span><span class="en hidden">Built-in functions like <code>print</code>, <code>input</code>, <code>alloc</code>, <code>exit</code> from the compiler runtime.</span></li>
-    <li><a href="examples.html"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a> — <span class="vi">Các chương trình mẫu thực tế từ thư mục <code>examples/</code> của repository.</span><span class="en hidden">Real working programs from the repository's <code>examples/</code> folder.</span></li>
-    <li><a href="diagnostics.html"><span class="vi">Mã lỗi</span><span class="en hidden">Diagnostics</span></a> — <span class="vi">Bảng tra cứu mã lỗi theo giai đoạn biên dịch và cách khắc phục.</span><span class="en hidden">Error code lookup table by compiler stage and how to fix each error.</span></li>
-  </ul>
 </div>
 
     <footer class="footer">

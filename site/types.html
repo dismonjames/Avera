@@ -14,7 +14,7 @@
   <div class="nav-l">
     <a href="index.html" class="logo">
       <div class="logo-mark">A</div>
-      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0-dev</span></span>
     </a>
   </div>
   <div class="nav-c">
@@ -43,7 +43,7 @@
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
           <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
-          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link active"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link active"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
           <ul><li><a href="stdlib.html" class="nav-link"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
     </nav>
@@ -52,167 +52,76 @@
     
 <div class="doc-section">
   <h1><span class="vi">Kiểu Dữ Liệu</span><span class="en hidden">Data Types</span></h1>
-  <p class="lead"><span class="vi">Toàn bộ hệ thống kiểu của Avera: kiểu nguyên thủy, shape (struct), choice (enum), kiểu Borrow, kiểu Magnet, và các kiểu tổ hợp.</span><span class="en hidden">Avera's complete type system: primitives, shape (struct), choice (enum), Borrow types, Magnet types, and composite types.</span></p>
 
-  <h2><span class="vi">1. Kiểu nguyên thủy (Primitives — built-in)</span><span class="en hidden">1. Primitive Types (built-in)</span></h2>
-  <p class="vi">Các kiểu sau được cung cấp sẵn bởi compiler runtime, không cần import:</p>
-  <p class="en hidden">The following types are provided by the compiler runtime and require no import:</p>
-
-  <table class="tbl">
-    <thead><tr><th><span class="vi">Kiểu</span><span class="en hidden">Type</span></th><th><span class="vi">Mô tả</span><span class="en hidden">Description</span></th><th><span class="vi">Ví dụ</span><span class="en hidden">Example</span></th></tr></thead>
-    <tbody>
-      <tr><td><code>I8 I16 I32 I64</code></td><td><span class="vi">Số nguyên có dấu 8/16/32/64-bit</span><span class="en hidden">Signed integers</span></td><td><code>-42</code>, <code>1000</code></td></tr>
-      <tr><td><code>U8 U16 U32 U64</code></td><td><span class="vi">Số nguyên không dấu 8/16/32/64-bit</span><span class="en hidden">Unsigned integers</span></td><td><code>255u</code>, <code>0</code></td></tr>
-      <tr><td><code>F32 F64</code></td><td><span class="vi">Số thực dấu phẩy động</span><span class="en hidden">Floating-point numbers</span></td><td><code>3.14</code>, <code>1.0</code></td></tr>
-      <tr><td><code>Bool</code></td><td><span class="vi">Kiểu Boolean (đúng/sai)</span><span class="en hidden">Boolean (true/false)</span></td><td><code>true</code>, <code>false</code></td></tr>
-      <tr><td><code>Text</code></td><td><span class="vi">Chuỗi ký tự UTF-8</span><span class="en hidden">UTF-8 string</span></td><td><code>"xin chao"</code></td></tr>
-      <tr><td><code>Char</code></td><td><span class="vi">Ký tự đơn</span><span class="en hidden">Single character</span></td><td><code>'a'</code></td></tr>
-      <tr><td><code>Byte</code></td><td><span class="vi">Byte thô (1 octet)</span><span class="en hidden">Raw byte (1 octet)</span></td><td><code>0xFF</code></td></tr>
-    </tbody>
-  </table>
-
-  <h2><span class="vi">2. Shape (kiểu tổ hợp tương tự struct)</span><span class="en hidden">2. Shape (like struct)</span></h2>
-  <p class="vi">Dùng từ khóa <code>shape</code> để định nghĩa kiểu có nhiều trường. Khai báo trường bằng <code>name: Type</code>. Khởi tạo bằng <code>TypeName(val1, val2)</code>.</p>
-  <p class="en hidden">Use the <code>shape</code> keyword to define a record type with named fields. Fields use <code>name: Type</code>. Instantiate with <code>TypeName(val1, val2)</code>.</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>shape.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>shape User will
-    name: Text
-    age:  I32
-finish
-
-# Khởi tạo shape
-:me = User("Alice", 30)
-
-# Truy cập trường
-print(me.name)
-print(me.age)</code></pre>
-</div>
-
-  <p class="vi">Method có thể định nghĩa ngoài shape với cú pháp <code>action TypeName.method_name(self_param, ...)</code>:</p>
-  <p class="en hidden">Methods can be defined outside the shape using <code>action TypeName.method_name(self_param, ...)</code>:</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>shape.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>action User.greet(u: User): I32 will
-    print("User:", u.name, "age:", u.age)
-    return 0
-finish
-
-# Gọi method
-me.greet()</code></pre>
-</div>
-
-  <h2><span class="vi">3. Choice (kiểu tổng quát tương tự enum)</span><span class="en hidden">3. Choice (like enum)</span></h2>
-  <p class="vi"><code>choice</code> là kiểu tagged union — một giá trị chỉ có thể là một trong các variant đã định nghĩa. Dùng <code>match</code> để phân biệt variant.</p>
-  <p class="en hidden"><code>choice</code> is a tagged union — a value can only be one of the defined variants at a time. Use <code>match</code> to distinguish variants.</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>choice.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>choice Shape will
-    Circle(radius: F64)
-    Rect(width: F64, height: F64)
-    Point
-finish
-
-:s = Shape.Circle(5.0)
-
-match s will
-    Circle(r)    => print("Circle radius:", r)
-    Rect(w, h)   => print("Rect", w, h)
-    Point        => print("just a point")
-finish</code></pre>
-</div>
-
-  <h2><span class="vi">4. Kiểu Generic</span><span class="en hidden">4. Generic Types</span></h2>
-  <p class="vi">Shape, choice và action đều hỗ trợ tham số kiểu generic:</p>
-  <p class="en hidden">Shape, choice and action all support generic type parameters:</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>generic.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>shape Pair<A, B> will
-    first:  A
-    second: B
-finish
-
-:p = Pair<I32, Text>(1, "hello")
-
-choice Maybe<T> will
-    Some(value: T)
-    None
-finish</code></pre>
-</div>
-
-  <h2><span class="vi">5. Kiểu Borrow (&T)</span><span class="en hidden">5. Borrow Types (&T)</span></h2>
-  <p class="vi">Borrow cho phép tham chiếu đến một giá trị mà không lấy ownership:</p>
-  <p class="en hidden">A borrow is a reference to a value without taking ownership:</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code>&T      # Shared borrow — chỉ đọc, nhiều borrow cùng lúc được phép
-&!T     # Mutable borrow — đọc/ghi, tại một thời điểm chỉ có 1 mutable borrow
-
-action print_user(u: &User) will
-    print(u.name)
-finish</code></pre>
-</div>
-
-  <h2><span class="vi">6. Kiểu Magnet (~T)</span><span class="en hidden">6. Magnet Types (~T)</span></h2>
-  <p class="vi">Magnet pointer gắn trực tiếp vào địa chỉ runtime thực của biến. Xem chi tiết ở trang <a href="ownership-magnet.html">Ownership &amp; Magnet</a>.</p>
-  <p class="en hidden">Magnet pointer attaches to the live runtime address of a variable. See <a href="ownership-magnet.html">Ownership &amp; Magnet</a> for full details.</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>Syntax</span><button class="copy-btn">Copy</button></div>
-  <pre><code>~T      # Immutable magnet pointer to T
-~!T     # Mutable magnet pointer to T</code></pre>
-</div>
-
-  <h2><span class="vi">7. Các kiểu tổ hợp khác</span><span class="en hidden">7. Other Composite Types</span></h2>
+  <h2><span class="vi">1. Machine Primitives</span><span class="en hidden">1. Machine Primitives</span></h2>
+  <p class="vi">Các kiểu nguyên thủy ánh xạ trực tiếp xuống phần cứng:</p>
+  <p class="en hidden">Primitive types mapping directly to hardware:</p>
   <table class="tbl">
     <thead><tr><th><span class="vi">Kiểu</span><span class="en hidden">Type</span></th><th><span class="vi">Mô tả</span><span class="en hidden">Description</span></th></tr></thead>
     <tbody>
-      <tr><td><code>[T; N]</code></td><td><span class="vi">Mảng kích thước cố định N phần tử kiểu T.</span><span class="en hidden">Fixed-size array of N elements of type T.</span></td></tr>
-      <tr><td><code>Maybe&lt;T&gt;</code></td><td><span class="vi">Kiểu tùy chọn: giá trị T hoặc none.</span><span class="en hidden">Optional: either a value of T or none.</span></td></tr>
-      <tr><td><code>Outcome&lt;Ok, Err&gt;</code></td><td><span class="vi">Kiểu kết quả: thành công Ok hoặc lỗi Err. Dùng với toán tử ?.</span><span class="en hidden">Result type: success Ok or error Err. Used with ? operator.</span></td></tr>
-      <tr><td><code>(T1, T2, ...)</code></td><td><span class="vi">Tuple không tên.</span><span class="en hidden">Unnamed tuple.</span></td></tr>
+      <tr><td><code>I8 I16 I32 I64 Int</code></td><td><span class="vi">Số nguyên có dấu</span><span class="en hidden">Signed integers</span></td></tr>
+      <tr><td><code>U8 U16 U32 U64 UInt Size</code></td><td><span class="vi">Số nguyên không dấu</span><span class="en hidden">Unsigned integers</span></td></tr>
+      <tr><td><code>F32 F64</code></td><td><span class="vi">Số thực</span><span class="en hidden">Floats</span></td></tr>
+      <tr><td><code>Bool</code></td><td><span class="vi">Boolean</span><span class="en hidden">Boolean</span></td></tr>
+      <tr><td><code>Char</code></td><td><span class="vi">Ký tự (Unicode scalar value)</span><span class="en hidden">Character (Unicode scalar value)</span></td></tr>
+      <tr><td><code>Byte</code></td><td><span class="vi">Byte thô (8-bit)</span><span class="en hidden">Raw byte (8-bit)</span></td></tr>
+      <tr><td><code>Address&lt;T&gt;</code></td><td><span class="vi">Địa chỉ bộ nhớ thuần (Raw memory address)</span><span class="en hidden">Raw memory address</span></td></tr>
     </tbody>
   </table>
 
-  <h2><span class="vi">8. Ability (Interface/Trait)</span><span class="en hidden">8. Ability (Interface/Trait)</span></h2>
-  <p class="vi"><code>ability</code> định nghĩa một tập hợp các hàm mà một kiểu phải implement:</p>
-  <p class="en hidden"><code>ability</code> defines a set of functions that a type must implement:</p>
+  <h2><span class="vi">2. Standard Owned Types</span><span class="en hidden">2. Standard Owned Types</span></h2>
+  <p class="vi">Ví dụ: <code>Text</code> (Chuỗi UTF-8 sở hữu vùng nhớ được cấp phát tự động).</p>
+  <p class="en hidden">Example: <code>Text</code> (Owned UTF-8 string with managed allocation).</p>
 
+  <h2><span class="vi">3. Shape (Struct)</span><span class="en hidden">3. Shape</span></h2>
+  <p class="vi"><code>shape</code> phân bổ trên <strong>stack hoặc inline</strong> mặc định. Không dùng heap trừ khi bọc trong <code>Box</code>.</p>
+  <p class="en hidden"><code>shape</code> instances are <strong>stack or inline</strong> allocated by default. No heap usage unless wrapped in <code>Box</code>.</p>
   <div class="cb">
-  <div class="cb-head"><span>ability.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>ability Printable will
-    action show(self: &Self): Text
-finish
-
-implement Printable for User will
-    action show(self: &User): Text will
-        return self.name
-    finish
+  <div class="cb-head"><span>shape.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>shape Point will
+    x: F32
+    y: F32
 finish</code></pre>
 </div>
 
-  <h2><span class="vi">9. Foreign (FFI với C)</span><span class="en hidden">9. Foreign (C FFI)</span></h2>
-  <p class="vi">Khai báo hàm C để gọi từ Avera, dùng directive <code>#header</code> và block <code>foreign</code>:</p>
-  <p class="en hidden">Declare C functions callable from Avera using <code>#header</code> directive and <code>foreign</code> block:</p>
+  <h3><span class="vi">Methods</span><span class="en hidden">Methods</span></h3>
+  <p class="vi">Method yêu cầu truyền <code>self</code> tường minh (e.g. <code>&self</code>, <code>&!self</code>, <code>^self</code>).</p>
+  <p class="en hidden">Methods require explicit <code>self</code> passing (e.g. <code>&self</code>, <code>&!self</code>, <code>^self</code>).</p>
+  <div class="cb">
+  <div class="cb-head"><span>method.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>action Point.shift(&!self, dx: F32) will
+    self.x += dx
+finish</code></pre>
+</div>
 
+  <h2><span class="vi">4. Choice (Enum)</span><span class="en hidden">4. Choice</span></h2>
+  <p class="vi">Kiểu Tagged Union (cũng nằm trên stack mặc định). Truy cập variant qua <code>.variant_name</code>.</p>
+  <p class="en hidden">Tagged Union type (also stack allocated by default). Access variants via <code>.variant_name</code>.</p>
+  <div class="cb">
+  <div class="cb-head"><span>choice.av</span><button class="copy-btn">Copy</button></div>
+  <pre><code>choice Maybe<T> will
+    Some(value: T)
+    None
+finish
+
+:val = Maybe.some(10)</code></pre>
+</div>
+
+  <h2><span class="vi">5. Foreign (C FFI)</span><span class="en hidden">5. Foreign (C FFI)</span></h2>
+  <p class="vi">Giao tiếp với C yêu cầu dùng các kiểu chuẩn xác về bộ nhớ (không tự ý cast <code>&Text</code> thành <code>char*</code>).</p>
+  <p class="en hidden">Interfacing with C requires accurate memory types (do not arbitrarily cast <code>&Text</code> to <code>char*</code>).</p>
   <div class="cb">
   <div class="cb-head"><span>ffi.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>#header "stdio.h"
-
-foreign "C" will
-    action printf(fmt: &Text, ...): I32
-finish
-
-action main(): I32 will
-    printf("hello from C\n")
-    return 0
+  <pre><code>foreign "C" will
+    action puts(s: Address<Byte>): I32
 finish</code></pre>
 </div>
+
+  <div class="notice">
+    <div class="nt"><span class="vi">Trạng thái Generics & Abilities</span><span class="en hidden">Generics & Abilities Status</span></div>
+    <p class="vi">Tính năng Generics và Abilities hiện đang trong giai đoạn phát triển (pending) trong compiler v0.1.0-dev.</p>
+    <p class="en hidden">Generics and Abilities are currently pending/in-development in compiler v0.1.0-dev.</p>
+  </div>
 </div>
 
     <footer class="footer">

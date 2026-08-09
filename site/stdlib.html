@@ -14,7 +14,7 @@
   <div class="nav-l">
     <a href="index.html" class="logo">
       <div class="logo-mark">A</div>
-      <span class="logo-text">Avera <span class="vtag">v0.1.0</span></span>
+      <span class="logo-text">Avera <span class="vtag">v0.1.0-dev</span></span>
     </a>
   </div>
   <div class="nav-c">
@@ -43,7 +43,7 @@
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
           <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
-          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
           <ul><li><a href="stdlib.html" class="nav-link active"><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></a></li><li><a href="examples.html" class="nav-link"><span class="vi">Ví dụ mã nguồn</span><span class="en hidden">Code Examples</span></a></li><li><a href="diagnostics.html" class="nav-link"><span class="vi">Mã lỗi (Diagnostics)</span><span class="en hidden">Diagnostics</span></a></li></ul></div>
     </nav>
@@ -52,56 +52,33 @@
     
 <div class="doc-section">
   <h1><span class="vi">Thư viện chuẩn (Stdlib)</span><span class="en hidden">Standard Library</span></h1>
-  <p class="lead"><span class="vi">Các hàm và kiểu dữ liệu chuẩn được cung cấp bởi compiler runtime. Không cần định nghĩa lại — chỉ cần import đúng module.</span><span class="en hidden">Functions and types provided by the compiler runtime. No need to redefine them — just import the correct module.</span></p>
 
-  <div class="notice">
-    <div class="nt"><span class="vi">Ghi chú</span><span class="en hidden">Note</span></div>
-    <p class="vi">Trong Avera v0.1.0, tất cả hàm stdlib là <strong>built-in</strong> — được trình biên dịch inject trực tiếp vào, không phải hàm Avera thông thường. File <code>core.av</code> và <code>io.av</code> trong stdlib/ chỉ chứa comment giải thích, không có khai báo hàm.</p>
-    <p class="en hidden">In Avera v0.1.0, all stdlib functions are <strong>built-in</strong> — injected directly by the compiler, not regular Avera functions. The <code>core.av</code> and <code>io.av</code> files only contain explanatory comments, not function declarations.</p>
-  </div>
-
-  <h2><span class="vi">Module #std.io</span><span class="en hidden">Module #std.io</span></h2>
-  <p class="vi">Import bằng dòng <code>#std.io</code> ở đầu file. Cung cấp các hàm I/O terminal:</p>
-  <p class="en hidden">Import with <code>#std.io</code> at the top of the file. Provides terminal I/O functions:</p>
-
+  <h2><span class="vi">I/O (std.io)</span><span class="en hidden">I/O (std.io)</span></h2>
   <div class="cb">
-  <div class="cb-head"><span>io_demo.av</span><button class="copy-btn">Copy</button></div>
+  <div class="cb-head"><span>io.av</span><button class="copy-btn">Copy</button></div>
   <pre><code>#std.io
 
 action main(): I32 will
-    print("xin chao")               # in ra stdout, tự xuống dòng
-    write("khong xuong dong ")      # in ra stdout, KHÔNG xuống dòng
-    eprint("day la loi!")           # in ra stderr
-    :line = input()                 # đọc 1 dòng từ stdin
-    print("ban nhap:", line)
+    print("xin chao")
+    :line = input()
     return 0
 finish</code></pre>
 </div>
 
+  <h2><span class="vi">Core (std.core)</span><span class="en hidden">Core (std.core)</span></h2>
   <table class="tbl">
     <thead><tr><th><span class="vi">Hàm</span><span class="en hidden">Function</span></th><th><span class="vi">Kiểu trả về</span><span class="en hidden">Return Type</span></th><th><span class="vi">Mô tả</span><span class="en hidden">Description</span></th></tr></thead>
     <tbody>
-      <tr><td><code>print(args...)</code></td><td><code>()</code></td><td><span class="vi">In các tham số cách nhau khoảng trắng, kết thúc bằng newline, ra stdout.</span><span class="en hidden">Print args space-separated with newline to stdout.</span></td></tr>
-      <tr><td><code>write(args...)</code></td><td><code>()</code></td><td><span class="vi">In các tham số ra stdout, KHÔNG có newline ở cuối.</span><span class="en hidden">Print args to stdout without trailing newline.</span></td></tr>
-      <tr><td><code>eprint(args...)</code></td><td><code>()</code></td><td><span class="vi">In ra stderr (dòng lỗi chuẩn).</span><span class="en hidden">Print to stderr.</span></td></tr>
-      <tr><td><code>input()</code></td><td><code>Text</code></td><td><span class="vi">Đọc một dòng từ stdin, trả về Text (không bao gồm ký tự newline).</span><span class="en hidden">Read one line from stdin, returns Text (no trailing newline).</span></td></tr>
-      <tr><td><code>read()</code></td><td><code>Text</code></td><td><span class="vi">Đọc toàn bộ stdin cho đến EOF.</span><span class="en hidden">Read all of stdin until EOF.</span></td></tr>
-      <tr><td><code>panic(msg)</code></td><td><span class="vi">không bao giờ trả về</span><span class="en hidden">never returns</span></td><td><span class="vi">In thông báo lỗi và thoát chương trình ngay lập tức.</span><span class="en hidden">Print error message and terminate the program immediately.</span></td></tr>
+      <tr><td><code>alloc(size: Size)</code></td><td><code>Address&lt;Byte&gt;</code></td><td><span class="vi">Cấp phát vùng nhớ thô trên heap, trả về địa chỉ máy.</span><span class="en hidden">Allocate raw memory on the heap, returning a machine address.</span></td></tr>
+      <tr><td><code>free(ptr: Address&lt;Byte&gt;)</code></td><td><code>()</code></td><td><span class="vi">Giải phóng vùng nhớ thô.</span><span class="en hidden">Free raw memory.</span></td></tr>
+      <tr><td><code>exit(code: I32)</code></td><td><span class="vi">-</span><span class="en hidden">-</span></td><td><span class="vi">Thoát chương trình.</span><span class="en hidden">Exit program.</span></td></tr>
     </tbody>
   </table>
-
-  <h2><span class="vi">Module #std.core</span><span class="en hidden">Module #std.core</span></h2>
-  <p class="vi">Import bằng dòng <code>#std.core</code>. Cung cấp các thao tác runtime cấp thấp:</p>
-  <p class="en hidden">Import with <code>#std.core</code>. Provides low-level runtime operations:</p>
-
-  <table class="tbl">
-    <thead><tr><th><span class="vi">Hàm</span><span class="en hidden">Function</span></th><th><span class="vi">Kiểu trả về</span><span class="en hidden">Return Type</span></th><th><span class="vi">Mô tả</span><span class="en hidden">Description</span></th></tr></thead>
-    <tbody>
-      <tr><td><code>alloc(size: I32)</code></td><td><code>~U8</code></td><td><span class="vi">Cấp phát vùng nhớ heap có kích thước <code>size</code> byte. Trả về magnet pointer.</span><span class="en hidden">Allocate a heap memory block of <code>size</code> bytes. Returns a magnet pointer.</span></td></tr>
-      <tr><td><code>free(ptr: ~U8)</code></td><td><code>()</code></td><td><span class="vi">Giải phóng vùng nhớ heap được trỏ bởi magnet pointer.</span><span class="en hidden">Free a heap memory block pointed to by a magnet pointer.</span></td></tr>
-      <tr><td><code>exit(code: I32)</code></td><td><span class="vi">không bao giờ trả về</span><span class="en hidden">never returns</span></td><td><span class="vi">Kết thúc chương trình ngay lập tức với exit status code.</span><span class="en hidden">Terminate the program immediately with the given exit status code.</span></td></tr>
-    </tbody>
-  </table>
+  <div class="notice">
+    <div class="nt"><span class="vi">Lưu ý về Heap</span><span class="en hidden">Heap Note</span></div>
+    <p class="vi"><code>alloc</code> và <code>free</code> trả về/nhận vào <code>Address&lt;Byte&gt;</code> (địa chỉ thật), KHÔNG PHẢI Magnet. Magnet không cấp phát hoặc giải phóng bộ nhớ; nó chỉ trỏ đến storage có sẵn.</p>
+    <p class="en hidden"><code>alloc</code> and <code>free</code> operate on <code>Address&lt;Byte&gt;</code> (raw addresses), NOT Magnets. Magnets do not allocate or free memory; they only route to existing storage.</p>
+  </div>
 </div>
 
     <footer class="footer">
