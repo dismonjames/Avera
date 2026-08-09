@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: Rust checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting of maintained files
+        run: >-
+          rustfmt --edition 2021 --check
+          src/check/ownership.rs
+          src/check/drop_elaborate.rs
+          src/check/borrow.rs
+          tests/common/mod.rs
+          tests/compile_fail.rs
+          tests/mir_safety.rs
+
+      - name: Check all targets
+        run: cargo check --all-targets
+
+      - name: Run tests
+        run: cargo test --all-targets

@@ -108,8 +108,8 @@ print(x)        // ERROR E4002: use after drop
 ```
 
 > In the v0.1 core subset all types are scalars/POD, so a `StorageDead` is
-  semantically a no-op, but the markers are emitted for completeness and so
-  the ownership state machine has a well-defined `Dropped` transition.
+> semantically a no-op, but the markers are emitted for completeness and so
+> the ownership state machine has a well-defined `Dropped` transition.
 
 ---
 
@@ -170,31 +170,33 @@ walks its statements, updating the per-local state map:
    reached. Successors are derived from each terminator (`Goto`,
    `SwitchInt`, `Switch`, `Return`, `Abort`, `Unreachable`).
 
-This is exactly the structure of a textbook reaching-definitions /
-available-expressions engine, applied to lifecycle states instead of
-facts.
-
 ---
 
 ## 6. Interactions with borrows and magnets
 
-Ownership is the foundation; the **borrow checker** and **magnet
-checker** layer on top of it. They enforce:
+Ownership is the foundation for the MIR borrow and magnet checks.
 
-- You cannot **move or drop** a value while a borrow or magnet depends on
-  it (`E4004`).
-- You cannot have two **mutable** accesses to the same place overlapping
-  (`E4005`).
-- You cannot **mutate** an immutable binding or a borrowed place (`E4006`).
+The MIR has a `Rvalue::Borrow` form and `src/check/borrow.rs` performs a
+forward may-analysis over the CFG. It rejects a move, drop, overwrite, or
+storage end of an owner while a borrow may still be active, and rejects
+incompatible mutable aliasing.
 
-These are described in their own documents:
+**Stage-0 source lowering does not currently emit `Rvalue::Borrow`.** That
+means source-level borrow syntax is not part of the proven-working feature
+set yet. The borrow checker is real MIR infrastructure, but it should not be
+presented as an end-to-end source-language safety guarantee until lowering
+and source-level regression tests are wired to it.
+
+Magnets are source-level today and are checked separately by
+`src/check/magnet.rs` for the attachment/use rules it currently implements.
+
+See also:
 
 - [MAGNET.md](MAGNET.md) — the magnet checker.
 - [DIAGNOSTICS.md](DIAGNOSTICS.md) — the full error catalogue.
 
-The borrow checker (`src/check/borrow.rs`) and magnet checker
-(`src/check/magnet.rs`) run in the same phase as the ownership checker,
-right after MIR validation and before drop elaboration
+The borrow checker and magnet checker run in the same phase as the ownership
+checker, right after MIR validation and before drop elaboration
 (`src/driver_pipeline/mod.rs`).
 
 ---
@@ -246,7 +248,7 @@ elaboration inserts `StorageDead` for each, in reverse order.
 | `E4001` | use after move | create a new value, borrow it, or don't move it |
 | `E4002` | use after drop / uninit | don't drop before use; ensure the binding has a value |
 | `E4003` | double drop | the compiler inserts drops automatically; don't `x!` an already-dropped binding |
-| `E4004` | move/drop while borrowed | end the borrow or detach the magnet first |
+| `E4004` | MIR move/drop while borrowed | end the borrow first; source borrow lowering is not stage-0 proven yet |
 | `E4006` | immutable binding mutated | use `:` instead of `::`, or release the borrow |
 
 See [DIAGNOSTICS.md](DIAGNOSTICS.md) for the full list.

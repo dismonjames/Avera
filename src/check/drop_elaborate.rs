@@ -1,4 +1,5 @@
 use crate::mir::body::{Body, Stmt};
+use crate::mir::place::Place;
 use crate::mir::rvalue::Rvalue;
 use crate::mir::terminator::Terminator;
 use crate::symbol::LocalId;
@@ -85,7 +86,7 @@ pub fn elaborate_drops(body: &mut Body) {
     }
     body.owns_heap = owns_heap.clone();
 
-    if body.locals.is_empty() {
+    if body.locals.is_empty() || body.blocks.is_empty() {
         return;
     }
     let all_locals: Vec<LocalId> = body.locals.iter().map(|l| l.id).collect();
@@ -95,7 +96,7 @@ pub fn elaborate_drops(body: &mut Body) {
     use std::collections::HashMap;
     type StateMap = HashMap<LocalId, DropState>;
     let mut in_states: Vec<StateMap> = vec![HashMap::new(); nblocks];
-    let mut in_worklist: Vec<bool> = vec![true; nblocks];
+    let mut in_worklist: Vec<bool> = vec![false; nblocks];
 
     // Entry: params are Init (caller-owned, but we still track state), others Uninit.
     for &p in &body.params {
@@ -105,17 +106,7 @@ pub fn elaborate_drops(body: &mut Body) {
         in_states[0].entry(local.id).or_insert(DropState::Uninit);
     }
 
-    // Predecessor map.
-    let mut preds: Vec<std::collections::HashSet<usize>> =
-        vec![std::collections::HashSet::new(); nblocks];
-    for (i, b) in body.blocks.iter().enumerate() {
-        for succ in successors(&b.term) {
-            if succ < nblocks {
-                preds[succ].insert(i);
-            }
-        }
-    }
-
+    in_worklist[0] = true;
     let mut worklist: Vec<usize> = vec![0];
     while let Some(idx) = worklist.pop() {
         in_worklist[idx] = false;
@@ -306,6 +297,3 @@ fn use_place(
 ) {
     // Plain uses don't change ownership state for freeing purposes.
 }
-
-// Re-export Place for the Call dest construction above.
-use crate::mir::place::Place;

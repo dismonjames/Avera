@@ -1,4 +1,3 @@
-
 mod common;
 use common::assert_compile_fails;
 
@@ -79,14 +78,14 @@ fn cf_dup_decl_in_for() {
         r#"
 #std.io
 action main(): I32 will
-    :i = 0
-    for i = 0 to 10 will
-        :i = 5
+    for i in 0..10 will
+        :x = 1
+        :x = 2
     finish
     return 0
 finish
 "#,
-        "",
+        "already declared",
     );
 }
 
@@ -293,37 +292,8 @@ finish
     );
 }
 
-// ===== Ownership: use-of-uninitialized =====
-
-#[test]
-fn cf_use_uninit() {
-    assert_compile_fails(
-        r#"
-#std.io
-action main(): I32 will
-    :x: I32
-    print(x)
-    return 0
-finish
-"#,
-        "",
-    );
-}
-
-#[test]
-fn cf_use_uninit_in_expr() {
-    assert_compile_fails(
-        r#"
-#std.io
-action main(): I32 will
-    :x: I32
-    :y = x + 1
-    return 0
-finish
-"#,
-        "",
-    );
-}
+// Uninitialized locals cannot currently be written in stage-0 source syntax.
+// The ownership invariant itself is covered directly at MIR level in mir_safety.rs.
 
 // ===== Ownership: move then move back (reassign revives) =====
 
@@ -367,7 +337,7 @@ action main(): I32 will
     return 0
 finish
 "#,
-        "",
+        "use after drop",
     );
 }
 
@@ -396,10 +366,23 @@ finish
 
 // ===== Nested scopes and ownership =====
 
-// NOTE: Conditional move (move in one branch of an if, use after the if) is a
-// known v0.1 limitation — the dataflow join correctly computes meet(Moved,
-// Init) = Moved, but the block structure may not propagate it in all cases.
-// Unconditional moves (same scope) ARE caught.
+#[test]
+fn cf_use_after_move_across_cfg_join() {
+    assert_compile_fails(
+        r#"
+#std.io
+action main(): I32 will
+    :x = 42
+    if true will
+        :y = ^x
+    finish
+    print(x)
+    return 0
+finish
+"#,
+        "use after move",
+    );
+}
 
 // ===== Magnets: immutable magnet write should fail (if enforced) =====
 // Note: v0.1 may not enforce mutability on magnets at compile time.
