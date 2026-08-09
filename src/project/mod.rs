@@ -178,12 +178,13 @@ pub fn parse_manifest(path: &Path, src: &str) -> (Manifest, DiagnosticList) {
                 format!("manifest key `{key}` appears before any section"),
             ),
             _ => {
-                // The unknown section itself is already diagnosed. Keep its
-                // contents invalid instead of silently interpreting them.
                 manifest_error(
                     &mut diags,
                     line_index,
-                    format!("cannot use key `{key}` inside unknown section `[{}]`", section),
+                    format!(
+                        "cannot use key `{key}` inside unknown section `[{}]`",
+                        section
+                    ),
                 );
             }
         }
@@ -200,9 +201,6 @@ pub fn parse_manifest(path: &Path, src: &str) -> (Manifest, DiagnosticList) {
 }
 
 fn manifest_error(diags: &mut DiagnosticList, line_index: usize, message: String) {
-    // The manifest parser is intentionally source-map independent today. Keep
-    // a stable byte-ish position so callers can still sort diagnostics, but do
-    // not downgrade malformed configuration to a warning.
     let pos = line_index.min(u32::MAX as usize) as u32;
     diags.push(Diagnostic::error(
         DiagnosticKind::Parse,
