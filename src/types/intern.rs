@@ -2,6 +2,7 @@ use crate::symbol::TypeId;
 use crate::types::ty::{Abilities, TyData, TyId};
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub struct TyCtxt {
     types: Vec<TyData>,
     cache: HashMap<String, TyId>,
@@ -39,8 +40,8 @@ impl TyCtxt {
         Self::fresh()
     }
 
-    pub fn new_from(_other: &TyCtxt) -> Self {
-        Self::fresh()
+    pub fn new_from(other: &TyCtxt) -> Self {
+        other.clone()
     }
 
     fn fresh() -> Self {
@@ -94,7 +95,6 @@ impl TyCtxt {
 
     fn intern_prim(&mut self, data: TyData) -> TyId {
         let id = self.intern(data.clone());
-        // primitives have primitive abilities.
         self.ensure_abilities(id, Abilities::primitives());
         id
     }
@@ -126,7 +126,6 @@ impl TyCtxt {
         if slot.is_none() {
             *slot = Some(ab);
         } else {
-            // merge (later facts win for bool flags)
             let cur = slot.as_mut().unwrap();
             cur.copy = ab.copy;
             if ab.drop {
@@ -154,24 +153,31 @@ impl TyCtxt {
     pub fn borrow(&mut self, inner: TyId, is_mut: bool) -> TyId {
         self.intern(TyData::Borrow { inner, is_mut })
     }
+
     pub fn magnet(&mut self, inner: TyId, is_mut: bool) -> TyId {
         self.intern(TyData::Magnet { inner, is_mut })
     }
+
     pub fn maybe(&mut self, inner: TyId) -> TyId {
         self.intern(TyData::Maybe(inner))
     }
+
     pub fn outcome(&mut self, ok: TyId, err: TyId) -> TyId {
         self.intern(TyData::Outcome { ok, err })
     }
+
     pub fn array(&mut self, elem: TyId, size: u64) -> TyId {
         self.intern(TyData::Array { elem, size })
     }
+
     pub fn address(&mut self, inner: TyId) -> TyId {
         self.intern(TyData::Address(inner))
     }
+
     pub fn span(&mut self, inner: TyId) -> TyId {
         self.intern(TyData::Span(inner))
     }
+
     pub fn fn_type(&mut self, params: Vec<TyId>, ret: TyId) -> TyId {
         self.intern(TyData::Fn { params, ret })
     }
@@ -199,7 +205,6 @@ impl TyCtxt {
             TyData::Unit => "Unit".into(),
             TyData::Never => "Never".into(),
             TyData::Shape { def, args } => {
-                let _ = def;
                 if args.is_empty() {
                     format!("<shape#{}>", def)
                 } else {
@@ -247,7 +252,6 @@ impl TyCtxt {
 }
 
 fn type_key(data: &TyData, _cx: &TyCtxt) -> String {
-    // A cheap structural key. Recursion is bounded by type depth.
     match data {
         TyData::Bool => "Bool".into(),
         TyData::Byte => "Byte".into(),
