@@ -369,11 +369,9 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
                 loaded_names.insert(module_name.clone());
                 let mut resolved = false;
                 if let Some(stdlib_path) = resolve_stdlib_import(&ipath.segments) {
-                    if stdlib_path.exists() {
-                        let parent = stdlib_path.parent().unwrap_or(Path::new(".")).to_path_buf();
-                        queue.push((stdlib_path, parent));
-                        resolved = true;
-                    }
+                    let parent = stdlib_path.parent().unwrap_or(Path::new(".")).to_path_buf();
+                    queue.push((stdlib_path, parent));
+                    resolved = true;
                 }
                 if !resolved {
                     if let Some(mav_path) = resolve_user_module(&ipath.segments, &search_dir) {
@@ -461,18 +459,43 @@ fn resolve_stdlib_import(segments: &[String]) -> Option<PathBuf> {
     if segments.is_empty() {
         return None;
     }
-    let path = segments.join("/");
-    let candidates = [
-        PathBuf::from("stdlib").join(&path).with_extension("av"),
-        PathBuf::from("std").join(&path).with_extension("av"),
-        PathBuf::from(&path).with_extension("av"),
-    ];
-    for c in &candidates {
-        if c.exists() {
-            return Some(c.clone());
+
+    let module_path = segments.join("/");
+    let mut roots = Vec::new();
+
+    if let Ok(root) = std::env::var("AVERA_STDLIB") {
+        if !root.trim().is_empty() {
+            roots.push(PathBuf::from(root));
         }
     }
-    None
+
+    roots.push(PathBuf::from("stdlib"));
+    roots.push(PathBuf::from("std"));
+
+    let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    roots.push(manifest_root.join("stdlib"));
+    roots.push(manifest_root.join("std"));
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(debug_or_release) = exe.parent() {
+            if let Some(target) = debug_or_release.parent() {
+                if let Some(root) = target.parent() {
+                    roots.push(root.join("stdlib"));
+                    roots.push(root.join("std"));
+                }
+            }
+        }
+    }
+
+    for root in roots {
+        let candidate = root.join(&module_path).with_extension("av");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+
+    let direct = PathBuf::from(&module_path).with_extension("av");
+    direct.is_file().then_some(direct)
 }
 
 fn resolve_user_module(segments: &[String], search_dir: &Path) -> Option<PathBuf> {
