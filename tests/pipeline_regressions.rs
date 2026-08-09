@@ -20,7 +20,10 @@ fn formatter_refuses_to_overwrite_malformed_source() {
     let after = std::fs::read_to_string(&path).unwrap();
     let _ = std::fs::remove_file(&path);
 
-    assert!(result.is_err(), "malformed source must not format successfully");
+    assert!(
+        result.is_err(),
+        "malformed source must not format successfully"
+    );
     assert_eq!(after, original, "formatter must preserve malformed input");
 }
 
@@ -36,7 +39,10 @@ fn missing_import_is_an_error_even_when_unused() {
     let result = driver_pipeline::check(std::slice::from_ref(&path));
     let _ = std::fs::remove_file(&path);
 
-    assert!(result.is_err(), "unused dangling import must still be rejected");
+    assert!(
+        result.is_err(),
+        "unused dangling import must still be rejected"
+    );
 }
 
 #[test]
@@ -45,8 +51,14 @@ fn missing_input_reports_error_instead_of_panicking_emitter() {
     let _ = std::fs::remove_file(&path);
 
     let result = std::panic::catch_unwind(|| driver_pipeline::check(std::slice::from_ref(&path)));
-    assert!(result.is_ok(), "missing input should not panic diagnostics emitter");
-    assert!(result.unwrap().is_err(), "missing input should be a user error");
+    assert!(
+        result.is_ok(),
+        "missing input should not panic diagnostics emitter"
+    );
+    assert!(
+        result.unwrap().is_err(),
+        "missing input should be a user error"
+    );
 }
 
 #[test]
