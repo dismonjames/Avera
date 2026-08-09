@@ -3,7 +3,7 @@ name = "avera"
 version = "2026.0.1"
 edition = "2021"
 rust-version = "1.81"
-description = "Biên dịch ngôn ngữ Avera - Đồ án môn học"
+description = "một ngôn ngữ được tôi lọ ra trong lúc chán"
 license = "MIT OR Apache-2.0"
 build = "build.rs"
 
