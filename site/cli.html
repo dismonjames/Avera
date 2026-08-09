@@ -41,7 +41,7 @@
     <nav class="sidebar-nav">
       <div class="nav-section">
           <div class="ns-title"><span class="vi">Bắt đầu</span><span class="en hidden">Getting Started</span></div>
-          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link active"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li><li><a href="cli.html" class="nav-link"><span class="vi">CLI & Tools</span><span class="en hidden">CLI & Tools</span></a></li></ul></div><div class="nav-section">
+          <ul><li><a href="index.html" class="nav-link"><span class="vi">Trang chủ & Tổng quan</span><span class="en hidden">Overview</span></a></li><li><a href="getting-started.html" class="nav-link"><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></a></li><li><a href="cli.html" class="nav-link active"><span class="vi">CLI & Tools</span><span class="en hidden">CLI & Tools</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Ngôn ngữ</span><span class="en hidden">Language</span></div>
           <ul><li><a href="syntax.html" class="nav-link"><span class="vi">Cú pháp & Câu lệnh</span><span class="en hidden">Syntax & Statements</span></a></li><li><a href="types.html" class="nav-link"><span class="vi">Kiểu dữ liệu & Kiểu tổ hợp</span><span class="en hidden">Types</span></a></li><li><a href="ownership-magnet.html" class="nav-link"><span class="vi">Ownership & Magnet</span><span class="en hidden">Ownership & Magnet</span></a></li><li><a href="modules.html" class="nav-link"><span class="vi">Modules & Projects (.mav)</span><span class="en hidden">Modules & Projects</span></a></li></ul></div><div class="nav-section">
           <div class="ns-title"><span class="vi">Tham khảo</span><span class="en hidden">Reference</span></div>
@@ -51,65 +51,43 @@
   <main class="main">
     
 <div class="doc-section">
-  <h1><span class="vi">Cài đặt & Chạy thử</span><span class="en hidden">Getting Started</span></h1>
-  <p class="lead"><span class="vi">Hướng dẫn cài đặt trình biên dịch Avera và viết chương trình đầu tiên.</span><span class="en hidden">Guide to installing the Avera compiler and writing your first program.</span></p>
+  <h1><span class="vi">Lệnh CLI & Công cụ (CLI & Tools)</span><span class="en hidden">CLI Commands & Tools</span></h1>
+  
+  <p class="vi">Trình biên dịch Avera cung cấp 4 lệnh CLI cốt lõi giúp bạn quản lý từ lúc kiểm tra mã nguồn cho đến khi ra file thực thi chạy được.</p>
+  <p class="en hidden">The Avera compiler provides 4 core CLI commands for everything from checking code to building the final executable.</p>
 
-  <h2><span class="vi">1. Yêu cầu hệ thống</span><span class="en hidden">1. Prerequisites</span></h2>
-  <p class="vi">Avera biên dịch trực tiếp ra mã máy và cần một <strong>C Linker</strong> trên hệ thống để đóng gói thành file thực thi.</p>
-  <p class="en hidden">Avera compiles ahead-of-time and requires a <strong>C Linker</strong> on your system to link the final executable.</p>
-  <ul>
-    <li><strong>Linux / macOS</strong>: <code>gcc</code>, <code>clang</code>, hoặc <code>cc</code> (thường có sẵn hoặc cài qua <code>build-essential</code> / Xcode Build Tools).</li>
-    <li><strong>Windows</strong>: MSVC (Visual Studio C++ Build Tools) hoặc MinGW/GCC.</li>
-  </ul>
-
-  <h2><span class="vi">2. Cài đặt nhanh (Pre-built Binaries)</span><span class="en hidden">2. Quick Install (Pre-built Binaries)</span></h2>
-  <p class="vi">Cách nhanh nhất để dùng Avera là cài đặt bản build sẵn cho Linux, macOS hoặc Windows.</p>
-  <p class="en hidden">The fastest way to use Avera is to install the pre-built binaries for Linux, macOS, or Windows.</p>
-
-  <h3>Linux / macOS (amd64 & arm64)</h3>
+  <h2><span class="vi">1. <code>avera run &lt;file&gt;</code></span><span class="en hidden">1. <code>avera run &lt;file&gt;</code></span></h2>
+  <p class="vi">Lệnh tiện lợi nhất. Nó sẽ <strong>biên dịch (compile) + liên kết (link) + chạy ngay lập tức</strong>.</p>
+  <p class="en hidden">The most convenient command. It will <strong>compile + link + run immediately</strong>.</p>
   <div class="cb">
   <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
-  <pre><code>curl -sSL https://raw.githubusercontent.com/dismonjames/Avera/main/install.sh | sh</code></pre>
+  <pre><code>avera run main.av</code></pre>
 </div>
 
-  <h3>Windows (amd64 & arm64)</h3>
-  <div class="cb">
-  <div class="cb-head"><span>PowerShell</span><button class="copy-btn">Copy</button></div>
-  <pre><code>irm https://raw.githubusercontent.com/dismonjames/Avera/main/install.ps1 | iex</code></pre>
-</div>
-
-  <h2><span class="vi">3. Build từ mã nguồn (Dành cho Dev)</span><span class="en hidden">3. Build from Source (For Devs)</span></h2>
-
+  <h2><span class="vi">2. <code>avera build &lt;files...&gt;</code></span><span class="en hidden">2. <code>avera build &lt;files...&gt;</code></span></h2>
+  <p class="vi">Biên dịch mã nguồn ra mã máy (Cranelift IR -> <code>.o</code> object file) rồi gọi C Linker để tạo file thực thi native. Nếu có <code>.mav</code> thì ném file <code>.mav</code> vào đây.</p>
+  <p class="en hidden">Compiles source code to machine code and invokes the C Linker to create a native executable.</p>
   <div class="cb">
   <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
-  <pre><code>git clone https://github.com/dismonjames/Avera.git
-cd Avera
-
-# Build release binary
-cargo build --release
-
-# Xác nhận binary
-./target/release/avera version</code></pre>
+  <pre><code>avera build main.av
+avera build src/sys.mav src/core.mav</code></pre>
 </div>
 
-  <h2><span class="vi">4. Hello World</span><span class="en hidden">4. Hello World</span></h2>
-  <p class="vi">Tạo file <code>hello.av</code>. Sử dụng từ khóa <code>action</code> cho hàm và cặp <code>will</code>...<code>finish</code> cho khối lệnh.</p>
-  <p class="en hidden">Create <code>hello.av</code>. Use the <code>action</code> keyword for functions and <code>will</code>...<code>finish</code> for blocks.</p>
-
-  <div class="cb">
-  <div class="cb-head"><span>hello.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>#std.io
-
-action main(): I32 will
-    print("Hello from Avera")
-    return 0
-finish</code></pre>
-</div>
-
+  <h2><span class="vi">3. <code>avera check &lt;files...&gt;</code></span><span class="en hidden">3. <code>avera check &lt;files...&gt;</code></span></h2>
+  <p class="vi">Chỉ chạy Lexer, Parser, và Ownership/Borrow/Magnet Checker (Static Dataflow Analysis). <strong>Không sinh mã máy (Cranelift)</strong>. Cực kỳ nhanh, lý tưởng để dev check lỗi liên tục.</p>
+  <p class="en hidden">Runs frontend and static safety checks without generating machine code. Extremely fast, ideal for continuous checking during development.</p>
   <div class="cb">
   <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
-  <pre><code>./target/release/avera run hello.av
-// Output: Hello from Avera</code></pre>
+  <pre><code>avera check project.mav</code></pre>
+</div>
+
+  <h2><span class="vi">4. <code>avera explain &lt;CODE&gt;</code></span><span class="en hidden">4. <code>avera explain &lt;CODE&gt;</code></span></h2>
+  <p class="vi">Tra cứu chi tiết về một mã lỗi (Diagnostics) do compiler ném ra. Giải thích nguyên nhân và cách sửa chuẩn xác.</p>
+  <p class="en hidden">Look up detailed information on an error code emitted by the compiler, including causes and solutions.</p>
+  <div class="cb">
+  <div class="cb-head"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+  <pre><code>avera explain E4001
+avera explain EMagnetTargetMoved</code></pre>
 </div>
 </div>
 
