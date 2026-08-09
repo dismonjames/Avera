@@ -53,8 +53,8 @@
 <div class="doc-section">
   <h1><span class="vi">Ownership, Borrow, Magnet & Address</span><span class="en hidden">Ownership, Borrow, Magnet & Address</span></h1>
   
-  <p class="vi">Avera có 4 khái niệm riêng biệt về bộ nhớ:</p>
-  <p class="en hidden">Avera has 4 distinct memory concepts:</p>
+  <p class="vi">Avera có 4 khái niệm riêng biệt về bộ nhớ, dành cho lập trình hệ thống an toàn:</p>
+  <p class="en hidden">Avera has 4 distinct memory concepts for safe systems programming:</p>
   <ul class="qlinks">
     <li><strong>Ownership</strong>: <span class="vi">Ai đang sở hữu dữ liệu (và chịu trách nhiệm dọn dẹp).</span><span class="en hidden">Who owns the data (and is responsible for cleanup).</span></li>
     <li><strong>Borrow</strong>: <span class="vi">Quyền truy cập tạm thời an toàn (không lấy ownership).</span><span class="en hidden">Safe temporary access rights (without ownership).</span></li>
@@ -73,8 +73,6 @@
 
 // print(msg)         // LỖI: msg không còn sở hữu dữ liệu</code></pre>
 </div>
-  <p class="vi"><strong>Drop Elaborator</strong> tự động chèn mã giải phóng khi owner ra khỏi scope (ví dụ: tự động free chuỗi <code>Text</code>, nhưng không chèn gì vào <code>shape</code> nằm trên stack).</p>
-  <p class="en hidden"><strong>Drop Elaborator</strong> automatically inserts cleanup code when the owner goes out of scope (e.g. automatically frees <code>Text</code> strings, but does nothing for stack-allocated <code>shape</code>s).</p>
 
   <h2><span class="vi">2. Borrow</span><span class="en hidden">2. Borrow</span></h2>
   <p class="vi">Borrow (<code>&</code>, <code>&!</code>) có scoped, tuân thủ quy tắc độc quyền (xor): tại một thời điểm, chỉ được phép có nhiều <code>&</code> HOẶC một <code>&!</code>.</p>
@@ -108,9 +106,52 @@
 // Lưu ý: m += n (không có dấu ~) mang ý nghĩa mutate giá trị của biến target (nếu nó là số).</code></pre>
 </div>
 
-  <h2><span class="vi">4. Raw & Address&lt;T&gt;</span><span class="en hidden">4. Raw & Address&lt;T&gt;</span></h2>
-  <p class="vi">Các khối <code>raw</code> được dùng khi thao tác trực tiếp với <code>Address&lt;T&gt;</code> (con trỏ C-style).</p>
-  <p class="en hidden"><code>raw</code> blocks are used when directly manipulating <code>Address&lt;T&gt;</code> (C-style pointers).</p>
+  <hr>
+  <h2><span class="vi">4. Chuyên sâu: Quản lý bộ nhớ dưới vỏ bọc (Under the Hood)</span><span class="en hidden">4. Deep Dive: Memory Management Under the Hood</span></h2>
+  <p class="vi">
+    Là một ngôn ngữ hệ thống, Avera không dùng "phép thuật" hay Garbage Collector. Quản lý bộ nhớ là tĩnh và minh bạch. 
+    Hiểu cách compiler suy luận cực kỳ quan trọng đối với kỹ sư hệ thống.
+  </p>
+  <p class="en hidden">
+    As a systems language, Avera uses no "magic" or Garbage Collector. Memory management is static and transparent. 
+    Understanding how the compiler reasons is critical for systems engineers.
+  </p>
+
+  <h3><span class="vi">Vòng đời của biến trên luồng dữ liệu MIR</span><span class="en hidden">Variable Lifecycle on MIR Dataflow</span></h3>
+  <p class="vi">Trình biên dịch biểu diễn code của bạn dưới dạng MIR (Mid-level Intermediate Representation). Tại đây, Ownership Checker theo dõi từng biến đi qua 4 trạng thái:</p>
+  <p class="en hidden">The compiler lowers your code to MIR (Mid-level Intermediate Representation). Here, the Ownership Checker tracks each variable through 4 states:</p>
+  
+  <table class="tbl">
+    <thead><tr><th><span class="vi">Trạng thái</span><span class="en hidden">State</span></th><th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>Uninit</code></td><td><span class="vi">Biến chưa có giá trị. Trình biên dịch sẽ lỗi nếu bạn cố đọc nó.</span><span class="en hidden">Variable has no value. The compiler errors if you try to read it.</span></td></tr>
+      <tr><td><code>Init</code></td><td><span class="vi">Biến đang giữ tài nguyên hợp lệ. Nếu kiểu của biến cần Heap allocation (ví dụ: Text, Box), nó được đánh dấu là <em>Heap-Owning</em>.</span><span class="en hidden">Variable holds a valid resource. If its type requires Heap allocation (e.g. Text, Box), it is marked as <em>Heap-Owning</em>.</span></td></tr>
+      <tr><td><code>Moved</code></td><td><span class="vi">Ownership đã chuyển sang biến khác hoặc hàm khác. Owner mới chịu trách nhiệm giải phóng.</span><span class="en hidden">Ownership transferred to another variable or function. The new owner is responsible for freeing.</span></td></tr>
+      <tr><td><code>Dropped</code></td><td><span class="vi">Biến đã bị hủy (qua <code>expr!</code>). Vùng nhớ không còn hợp lệ.</span><span class="en hidden">Variable was destroyed (via <code>expr!</code>). Memory is no longer valid.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3><span class="vi">Drop Elaborator: Người dọn dẹp tĩnh</span><span class="en hidden">Drop Elaborator: The Static Cleaner</span></h3>
+  <p class="vi">
+    <strong>Drop Elaborator</strong> là một compiler pass chạy ngay trước khi sinh mã (Codegen). Nó thực thi "tự động giải phóng" bằng cách tĩnh:
+  </p>
+  <p class="en hidden">
+    The <strong>Drop Elaborator</strong> is a compiler pass that runs right before Codegen. It implements "automatic deallocation" statically:
+  </p>
+  <ol>
+    <li><span class="vi">Xác định các local có kiểu <em>Heap-Owning</em>. Các kiểu như <code>shape</code>, <code>choice</code>, fixed <code>array</code> nằm trên stack nên không bị ảnh hưởng.</span>
+        <span class="en hidden">Identifies locals with <em>Heap-Owning</em> types. Types like <code>shape</code>, <code>choice</code>, and fixed <code>array</code> are stack-allocated and thus unaffected.</span></li>
+    <li><span class="vi">Quét toàn bộ CFG (Control Flow Graph) để tính toán trạng thái (Uninit/Init/Moved/Dropped) tại mọi điểm thoát của hàm.</span>
+        <span class="en hidden">Scans the entire CFG to compute the state (Uninit/Init/Moved/Dropped) at every function exit point.</span></li>
+    <li><span class="vi">Tại mỗi điểm <code>Return</code>, với những biến <em>Heap-Owning</em> vẫn đang ở trạng thái <code>Init</code>, compiler <strong>tự động chèn lệnh runtime <code>avera_free(address)</code></strong> vào MIR.</span>
+        <span class="en hidden">At each <code>Return</code> point, for any <em>Heap-Owning</em> variable still in the <code>Init</code> state, the compiler <strong>automatically injects a runtime <code>avera_free(address)</code> instruction</strong> into the MIR.</span></li>
+  </ol>
+
+  <div class="notice">
+    <div class="nt"><span class="vi">Drop thủ công (Explicit Drop)</span><span class="en hidden">Explicit Manual Drop</span></div>
+    <p class="vi">Khi bạn dùng toán tử giải phóng sớm <code>expr!</code>, trình biên dịch lập tức chèn <code>avera_free</code> ngay tại dòng đó (nếu là Heap-Owning) và đổi trạng thái biến thành <code>Dropped</code>. Các lệnh sau đó nếu chạm vào biến này sẽ bị Borrow/Ownership Checker chặn cứng.</p>
+    <p class="en hidden">When you use the early explicit drop operator <code>expr!</code>, the compiler immediately injects <code>avera_free</code> at that exact line (if Heap-Owning) and transitions the state to <code>Dropped</code>. Subsequent attempts to use the variable are hard-blocked by the Borrow/Ownership Checker.</p>
+  </div>
 </div>
 
     <footer class="footer">
