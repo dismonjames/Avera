@@ -299,4 +299,4 @@ See [COMPILER.md](COMPILER.md) for how the pieces fit together.
 
 ## License
 
-Dual-licensed under `MIT OR Apache-2.0` (see `Cargo.toml`).
+Dual-licensed under `GPL-3.0` (see `Cargo.toml`).
