@@ -92,14 +92,16 @@ pub fn assert_compile_fails(src: &str, needle: &str) -> String {
         "expected compilation to FAIL, but it succeeded. Output:\n{}",
         combined
     );
-    if !needle.is_empty() {
-        assert!(
-            combined.contains(needle),
-            "expected diagnostic containing `{}` but got:\n{}",
-            needle,
-            combined
-        );
-    }
+    assert!(
+        !needle.is_empty(),
+        "compile-fail tests must assert a concrete diagnostic"
+    );
+    assert!(
+        combined.contains(needle),
+        "expected diagnostic containing `{}` but got:\n{}",
+        needle,
+        combined
+    );
     combined
 }
 
