@@ -117,9 +117,7 @@ impl<'a> MagnetChecker<'a> {
 
     fn handle_rvalue(&mut self, rv: &Rvalue, state: &mut MagnetMap, dest: LocalId) {
         match rv {
-            Rvalue::MagnetAttach {
-                place, is_mut, ..
-            } => {
+            Rvalue::MagnetAttach { place, is_mut, .. } => {
                 if state.get(&dest).is_some_and(|facts| {
                     facts
                         .iter()
@@ -227,9 +225,7 @@ impl<'a> MagnetChecker<'a> {
             .filter_map(|(holder, facts)| {
                 facts
                     .iter()
-                    .any(|fact| {
-                        fact.state == MagnetState::Attached && fact.target == Some(target)
-                    })
+                    .any(|fact| fact.state == MagnetState::Attached && fact.target == Some(target))
                     .then_some(*holder)
             })
             .collect();
