@@ -43,6 +43,7 @@ jobs:
           tests/compile_fail.rs
           tests/mir_safety.rs
           tests/runtime_regressions.rs
+          tests/runtime_build_regressions.rs
           tests/module_graph_regressions.rs
           tests/diagnostics_regressions.rs
           tests/cli_regressions.rs
