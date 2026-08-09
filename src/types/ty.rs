@@ -1,4 +1,4 @@
-use crate::symbol::{Arena, FieldId, TypeId, VariantId};
+use crate::symbol::TypeId;
 
 pub type TyId = TypeId;
 
@@ -36,7 +36,6 @@ impl Abilities {
 
 #[derive(Clone, Debug)]
 pub enum TyData {
-    // ---- primitives ----
     Bool,
     Byte,
     Char,
@@ -57,7 +56,6 @@ pub enum TyData {
     Bytes,
     Unit,
     Never,
-    // ---- aggregates ----
     Shape {
         def: u32,
         args: Vec<TyId>,
@@ -118,6 +116,7 @@ impl TyData {
                 | TyData::UInt
         )
     }
+
     pub fn is_integer(&self) -> bool {
         matches!(
             self,
@@ -134,15 +133,18 @@ impl TyData {
                 | TyData::UInt
         )
     }
+
     pub fn is_float(&self) -> bool {
         matches!(self, TyData::F32 | TyData::F64)
     }
+
     pub fn is_signed(&self) -> bool {
         matches!(
             self,
             TyData::I8 | TyData::I16 | TyData::I32 | TyData::I64 | TyData::Int
         )
     }
+
     pub fn naive_size(&self) -> u64 {
         match self {
             TyData::Bool | TyData::Byte | TyData::U8 | TyData::I8 => 1,
@@ -154,6 +156,7 @@ impl TyData {
             _ => 0,
         }
     }
+
     pub fn name(&self) -> &'static str {
         match self {
             TyData::Bool => "Bool",
@@ -191,89 +194,3 @@ impl TyData {
         }
     }
 }
-
-#[derive(Clone, Debug)]
-pub struct FieldInfo {
-    pub name: String,
-    pub ty: TyId,
-    pub span: crate::diagnostics::span::Span,
-}
-
-#[derive(Clone, Debug)]
-pub struct VariantInfo {
-    pub name: String,
-    pub payload: Option<Vec<(String, TyId)>>,
-    pub span: crate::diagnostics::span::Span,
-}
-
-#[derive(Clone, Debug)]
-pub enum DefKind {
-    Shape {
-        generics: Vec<String>,
-        fields: Vec<FieldInfo>,
-    },
-    Choice {
-        generics: Vec<String>,
-        variants: Vec<VariantInfo>,
-    },
-    Ability {
-        generics: Vec<String>,
-    },
-}
-
-#[derive(Default)]
-pub struct Defs {
-    pub kinds: Vec<DefKind>,
-    pub names: Vec<String>,
-    pub abilities: Vec<Abilities>,
-    pub spans: Vec<crate::diagnostics::span::Span>,
-}
-
-impl Defs {
-    pub fn new() -> Self {
-        Self::default()
-    }
-    pub fn push(
-        &mut self,
-        name: String,
-        kind: DefKind,
-        abilities: Abilities,
-        span: crate::diagnostics::span::Span,
-    ) -> u32 {
-        let id = self.kinds.len() as u32;
-        self.kinds.push(kind);
-        self.names.push(name);
-        self.abilities.push(abilities);
-        self.spans.push(span);
-        id
-    }
-    pub fn kind(&self, def: u32) -> &DefKind {
-        &self.kinds[def as usize]
-    }
-    pub fn name(&self, def: u32) -> &str {
-        &self.names[def as usize]
-    }
-    pub fn abilities(&self, def: u32) -> &Abilities {
-        &self.abilities[def as usize]
-    }
-    pub fn find(&self, name: &str) -> Option<u32> {
-        self.names.iter().position(|n| n == name).map(|i| i as u32)
-    }
-}
-
-impl std::ops::Index<FieldId> for Defs {
-    type Output = FieldInfo;
-    fn index(&self, _id: FieldId) -> &FieldInfo {
-        panic!("FieldId indexing not supported on Defs; use the shape's fields vec")
-    }
-}
-impl std::ops::Index<VariantId> for Defs {
-    type Output = VariantInfo;
-    fn index(&self, _id: VariantId) -> &VariantInfo {
-        panic!("VariantId indexing not supported on Defs; use the choice's variants vec")
-    }
-}
-
-// re-export Arena so other modules can build typed arenas of FieldInfo.
-pub type FieldArena = Arena<FieldId, FieldInfo>;
-pub type VariantArena = Arena<VariantId, VariantInfo>;
