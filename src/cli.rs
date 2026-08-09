@@ -195,7 +195,7 @@ pub fn print_help() {
     println!("    avera <COMMAND> [OPTIONS] [INPUTS...]");
     println!();
     println!("COMMANDS:");
-    println!("    check <files...>        Type-check and validate without linking");
+    println!("    check <files...>        Parse, lower, and validate without linking");
     println!("    build <files...>        Compile and link to a native executable");
     println!("    run   <file> [args...]  Build then run the program");
     println!("    test  <dirs...>         Compile and run the test suite");
