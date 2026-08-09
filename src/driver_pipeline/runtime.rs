@@ -193,9 +193,9 @@ void *avera_array_get(void *arr_ptr, long index, long elem_size) {
     return arr->data + (size_t)index * (size_t)arr->elem_size;
 }
 
-void avera_array_set(void *arr_ptr, long index, long value, long elem_size) {
+long avera_array_set(void *arr_ptr, long index, long value, long elem_size) {
     AveraArray *arr = (AveraArray *)arr_ptr;
-    if (!arr) return;
+    if (!arr) return 0;
     if (elem_size != arr->elem_size || elem_size != 8) {
         const char *msg = "avera: unsupported array element layout\n";
         for (const char *p = msg; *p; p++) avera_putc((long)*p);
@@ -208,6 +208,7 @@ void avera_array_set(void *arr_ptr, long index, long value, long elem_size) {
     }
     long *slot = (long *)(arr->data + (size_t)index * 8);
     *slot = value;
+    return 0;
 }
 
 long avera_array_cap(void *arr_ptr) {
@@ -266,8 +267,8 @@ long avera_text_get(void *t, long index) {
     return slot ? *(long *)slot : 0;
 }
 
-void avera_text_set(void *t, long index, long value) {
-    avera_array_set(t, index, value, 8);
+long avera_text_set(void *t, long index, long value) {
+    return avera_array_set(t, index, value, 8);
 }
 
 void *avera_text_concat(void *a, void *b) {
@@ -296,9 +297,10 @@ long avera_text_push(void *t_ptr, long value) {
     return avera_array_push(t_ptr, value);
 }
 
-void avera_text_print(void *t) {
+long avera_text_print(void *t) {
     long len = avera_text_len(t);
     for (long i = 0; i < len; i++) avera_putc(avera_text_get(t, i));
+    return 0;
 }
 
 void *avera_text_read_line(void) {
