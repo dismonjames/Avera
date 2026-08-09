@@ -52,26 +52,24 @@ impl<'a> Emitter<'a> {
         let sev = d.severity.label();
         let reset = if self.color { "\u{1b}[0m" } else { "" };
         let sev_color = if self.color { d.severity.ansi() } else { "" };
-        // header line
         out.push_str(&format!("{}{}{}: {}\n", sev_color, sev, reset, d.message));
         out.push_str(&format!(
             "  {} {}:{}:{}\n",
             "-->", file.name, lc.line, lc.col
         ));
-        // primary snippet
         self.render_snippet(d.span, &d.message, out, true);
         for r in &d.related {
-            let rlc = file.line_col(r.span.start);
+            let related_file = self.map.file(r.span.file);
+            let rlc = related_file.line_col(r.span.start);
             out.push_str(&format!(
                 "  {} {}:{}:{}\n",
-                "-->", file.name, rlc.line, rlc.col
+                "-->", related_file.name, rlc.line, rlc.col
             ));
             self.render_snippet(r.span, &r.message, out, false);
         }
         if let Some(s) = &d.suggestion {
             out.push_str(&format!("  {} suggestion: {}\n", "=", s));
         }
-        let _ = reset; // already used inline
     }
 
     fn render_snippet(&self, span: Span, msg: &str, out: &mut String, primary: bool) {
@@ -81,11 +79,8 @@ impl<'a> Emitter<'a> {
         let line_text = file.line_text(line_no);
         let gutter_width = line_no.to_string().len().max(3);
         let pad = " ".repeat(gutter_width);
-        // line with code
         out.push_str(&format!("{}{} {}\n", pad, "|", line_text));
-        // underline line
         let col0 = (lc.col as usize).saturating_sub(1);
-        // Compute underline width across the span on this line.
         let line_start =
             (file.line_starts[(line_no as usize).saturating_sub(1)] as usize).min(file.src.len());
         let line_end = if (line_no as usize) < file.line_starts.len() {
@@ -99,10 +94,8 @@ impl<'a> Emitter<'a> {
         let span_end_in_line = (span.end as usize).clamp(line_start, line_end);
         let span_start_in_line = (span.start as usize).clamp(line_start, line_end);
         let width = span_end_in_line.saturating_sub(span_start_in_line).max(1);
-        let underline_str: String = "^".repeat(width);
         let accent = if primary { "^" } else { "-" };
         let underline: String = accent.repeat(width);
-        let _ = underline_str;
         let marker_color = if self.color {
             if primary {
                 "\u{1b}[31m"
