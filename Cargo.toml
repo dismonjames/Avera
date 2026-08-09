@@ -4,7 +4,7 @@ version = "2026.0.1"
 edition = "2021"
 rust-version = "1.81"
 description = "một ngôn ngữ được tôi lọ ra trong lúc chán"
-license = "MIT OR Apache-2.0"
+license = "GPL-3.0-or-later"
 build = "build.rs"
 
 [[bin]]
