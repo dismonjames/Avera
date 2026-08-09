@@ -32,9 +32,7 @@ pub enum Command {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum EmitKind {
     Ast,
-    TypedAst,
     Mir,
-    Clif,
     Obj,
 }
 
@@ -51,7 +49,7 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
     match cmd.as_str() {
         "version" | "--version" | "-V" => Ok(Command::Version),
         "check" => {
-            let inputs = collect_paths(&mut iter);
+            let inputs = collect_paths(&mut iter, "check")?;
             Ok(Command::Check { inputs })
         }
         "build" => {
@@ -67,15 +65,20 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
                     "-O2" => opt = 2,
                     "--opt" => {
                         i += 1;
-                        if i < rest.len() {
-                            opt = rest[i].parse().unwrap_or(0);
+                        let value = rest.get(i).ok_or("`--opt` needs a value 0, 1, or 2")?;
+                        opt = value
+                            .parse::<u32>()
+                            .map_err(|_| format!("invalid optimization level `{value}`"))?;
+                        if opt > 2 {
+                            return Err(format!(
+                                "invalid optimization level `{opt}`; expected 0, 1, or 2"
+                            ));
                         }
                     }
                     "--emit" => {
                         i += 1;
-                        if i < rest.len() {
-                            emit = Some(parse_emit(&rest[i])?);
-                        }
+                        let value = rest.get(i).ok_or("`--emit` needs a target")?;
+                        emit = Some(parse_emit(value)?);
                     }
                     other if other.starts_with('-') => {
                         return Err(format!("unknown flag `{}`", other));
@@ -84,6 +87,7 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
                 }
                 i += 1;
             }
+            require_inputs("build", &inputs)?;
             Ok(Command::Build { inputs, opt, emit })
         }
         "run" => {
@@ -94,7 +98,10 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
                     args.extend(iter.by_ref().cloned());
                     break;
                 }
-                if input.is_none() && !a.starts_with('-') {
+                if input.is_none() {
+                    if a.starts_with('-') {
+                        return Err(format!("unknown `run` flag `{a}`; use `--` before program args"));
+                    }
                     input = Some(PathBuf::from(a));
                 } else {
                     args.push(a.clone());
@@ -106,7 +113,7 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
             })
         }
         "test" => Ok(Command::Test {
-            inputs: collect_paths(&mut iter),
+            inputs: collect_paths(&mut iter, "test")?,
         }),
         "fmt" => {
             let mut check = false;
@@ -114,15 +121,21 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
             for a in iter.by_ref() {
                 if a == "--check" {
                     check = true;
+                } else if a.starts_with('-') {
+                    return Err(format!("unknown `fmt` flag `{a}`"));
                 } else {
                     inputs.push(PathBuf::from(a));
                 }
             }
+            require_inputs("fmt", &inputs)?;
             Ok(Command::Fmt { inputs, check })
         }
         "clean" => Ok(Command::Clean),
         "explain" => {
             let code = iter.next().cloned().ok_or("`avera explain` needs a code")?;
+            if iter.next().is_some() {
+                return Err("`avera explain` accepts exactly one diagnostic code".into());
+            }
             Ok(Command::Explain { code })
         }
         "--help" | "-h" | "help" => {
@@ -133,19 +146,39 @@ pub fn parse_args(args: &[String]) -> Result<Command, String> {
     }
 }
 
-fn collect_paths<'a, I: Iterator<Item = &'a String>>(iter: &mut I) -> Vec<PathBuf> {
-    iter.filter(|s| !s.starts_with('-'))
-        .map(PathBuf::from)
-        .collect()
+fn collect_paths<'a, I: Iterator<Item = &'a String>>(
+    iter: &mut I,
+    command: &str,
+) -> Result<Vec<PathBuf>, String> {
+    let mut paths = Vec::new();
+    for value in iter {
+        if value.starts_with('-') {
+            return Err(format!("unknown `{command}` flag `{value}`"));
+        }
+        paths.push(PathBuf::from(value));
+    }
+    require_inputs(command, &paths)?;
+    Ok(paths)
+}
+
+fn require_inputs(command: &str, inputs: &[PathBuf]) -> Result<(), String> {
+    if inputs.is_empty() {
+        Err(format!("`avera {command}` needs at least one input"))
+    } else {
+        Ok(())
+    }
 }
 
 fn parse_emit(s: &str) -> Result<EmitKind, String> {
     Ok(match s {
         "ast" => EmitKind::Ast,
-        "typed-ast" => EmitKind::TypedAst,
         "mir" => EmitKind::Mir,
-        "clif" => EmitKind::Clif,
         "obj" => EmitKind::Obj,
+        "typed-ast" | "clif" => {
+            return Err(format!(
+                "`--emit {s}` is not implemented in the stage-0 compiler"
+            ));
+        }
         other => return Err(format!("unknown --emit target `{}`", other)),
     })
 }
@@ -163,15 +196,15 @@ pub fn print_help() {
     println!("    check <files...>        Type-check and validate without linking");
     println!("    build <files...>        Compile and link to a native executable");
     println!("    run   <file> [args...]  Build then run the program");
-    println!("    test  <dirs...>          Compile and run the test suite");
+    println!("    test  <dirs...>         Compile and run the test suite");
     println!("    fmt   <files...>        Format source (use --check to verify)");
-    println!("    version                 Print compiler version");
+    println!("    version                Print compiler version");
     println!("    explain <code>         Explain a diagnostic code");
-    println!("    clean                   Remove build artifacts");
+    println!("    clean                  Remove build artifacts");
     println!();
     println!("OPTIONS:");
-    println!("    -O0/-O1/-O2 | --opt N   Optimization level");
-    println!("    --emit ast|typed-ast|mir|clif|obj   Emit an intermediate form");
+    println!("    -O0/-O1/-O2 | --opt N  Optimization level");
+    println!("    --emit ast|mir|obj      Emit an implemented intermediate form");
     println!("    --check (with fmt)      Exit non-zero if formatting would change");
     println!();
     println!("ENV:");
@@ -192,15 +225,30 @@ pub fn run(cmd: Command) -> ExitCode {
             println!("Avera {} — Avera stage-0 compiler", crate::AVERA_VERSION);
             ExitCode::from(EXIT_OK)
         }
-        Command::Explain { code } => {
-            explain(&code);
-            ExitCode::from(EXIT_OK)
-        }
-        Command::Clean => {
-            let _ = std::fs::remove_dir_all("build");
-            println!("cleaned");
-            ExitCode::from(EXIT_OK)
-        }
+        Command::Explain { code } => match crate::diagnostics_explanations(&code) {
+            Some(text) => {
+                println!("{}", text);
+                ExitCode::from(EXIT_OK)
+            }
+            None => {
+                eprintln!("no explanation available for code `{}`", code);
+                ExitCode::from(EXIT_USER)
+            }
+        },
+        Command::Clean => match std::fs::remove_dir_all("build") {
+            Ok(()) => {
+                println!("cleaned");
+                ExitCode::from(EXIT_OK)
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                println!("already clean");
+                ExitCode::from(EXIT_OK)
+            }
+            Err(e) => {
+                eprintln!("failed to clean build directory: {e}");
+                ExitCode::from(EXIT_USER)
+            }
+        },
         Command::Check { inputs } => match driver_pipeline::check(&inputs) {
             Ok(()) => ExitCode::from(EXIT_OK),
             Err(_) => ExitCode::from(EXIT_USER),
@@ -222,10 +270,4 @@ pub fn run(cmd: Command) -> ExitCode {
             Err(_) => ExitCode::from(EXIT_USER),
         },
     }
-}
-
-fn explain(code: &str) {
-    let text = crate::diagnostics_explanations(code)
-        .unwrap_or_else(|| format!("no explanation available for code `{}`", code));
-    println!("{}", text);
 }
