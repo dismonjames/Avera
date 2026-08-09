@@ -135,7 +135,10 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
         .to_string();
     let build_dir = PathBuf::from("build/debug");
     if let Err(e) = std::fs::create_dir_all(&build_dir) {
-        eprintln!("cannot create build directory `{}`: {e}", build_dir.display());
+        eprintln!(
+            "cannot create build directory `{}`: {e}",
+            build_dir.display()
+        );
         return Err(());
     }
     match emit {
@@ -177,7 +180,10 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
 pub fn run(input: &Path, args: &[String]) -> Result<u8, ()> {
     let build_dir = PathBuf::from("build/debug");
     if let Err(e) = std::fs::create_dir_all(&build_dir) {
-        eprintln!("cannot create build directory `{}`: {e}", build_dir.display());
+        eprintln!(
+            "cannot create build directory `{}`: {e}",
+            build_dir.display()
+        );
         return Err(());
     }
     let name = input
