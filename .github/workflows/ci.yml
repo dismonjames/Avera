@@ -28,6 +28,8 @@ jobs:
           src/check/ownership.rs
           src/check/drop_elaborate.rs
           src/check/borrow.rs
+          src/check/magnet.rs
+          src/check/validate.rs
           tests/common/mod.rs
           tests/compile_fail.rs
           tests/mir_safety.rs
