@@ -1,4 +1,4 @@
-use crate::symbol::TypeId;
+use crate::symbol::{FieldId, TypeId};
 
 pub type TyId = TypeId;
 
@@ -193,4 +193,31 @@ impl TyData {
             TyData::Infer => "_",
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct FieldInfo {
+    pub name: String,
+    pub ty: TyId,
+    pub offset: u64,
+}
+
+#[derive(Clone, Debug)]
+pub struct VariantInfo {
+    pub name: String,
+    pub fields: Vec<FieldId>,
+    pub discr: u64,
+}
+
+#[derive(Clone, Debug)]
+pub enum DefKind {
+    Shape {
+        fields: Vec<FieldId>,
+        abilities: Abilities,
+    },
+    Choice {
+        variants: Vec<VariantInfo>,
+        abilities: Abilities,
+    },
+    Ability,
 }
