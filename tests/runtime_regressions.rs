@@ -1,6 +1,6 @@
 mod common;
 
-use common::{build_and_run_with_stdin, assert_run};
+use common::{assert_run, build_and_run_with_stdin};
 
 #[test]
 fn array_push_grows_without_invalidating_owner() {
