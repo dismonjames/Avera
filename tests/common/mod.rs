@@ -37,11 +37,18 @@ pub fn cleanup_binary(exe: &std::path::Path) {
     let _ = std::fs::remove_file(&obj);
 }
 
-pub fn build_and_run(src: &str) -> String {
+pub fn build_and_run_full(src: &str) -> (String, String) {
     let exe = build_source(src, "test_input");
     let run = Command::new(&exe).output().expect("failed to run binary");
     cleanup_binary(&exe);
-    String::from_utf8_lossy(&run.stdout).to_string()
+    (
+        String::from_utf8_lossy(&run.stdout).to_string(),
+        String::from_utf8_lossy(&run.stderr).to_string(),
+    )
+}
+
+pub fn build_and_run(src: &str) -> String {
+    build_and_run_full(src).0
 }
 
 pub fn build_and_run_with_stdin(src: &str, stdin: &str) -> String {
