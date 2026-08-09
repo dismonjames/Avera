@@ -64,7 +64,7 @@ fn rewrite_block(stmts: &mut Vec<Stmt>, loops: &mut Vec<LoopKind>) -> Result<(),
             } => {
                 if !matches!(iter.kind, ExprKind::Range { .. }) {
                     return Err(
-                        "non-range for iterators are not implemented in stage-0".to_string(),
+                        "non-range for iterators are not implemented in stage-0".to_string()
                     );
                 }
                 let name = match &pat.kind {
