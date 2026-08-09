@@ -49,112 +49,269 @@
     </nav>
   </aside>
   <main class="main">
-    
+
 <div class="doc-section">
   <h1><span class="vi">Ownership & Magnet Pointer</span><span class="en hidden">Ownership & Magnet Pointer</span></h1>
-  <p class="lead"><span class="vi">Giải thích chi tiết cơ chế quản lý bộ nhớ tĩnh của Avera: quy tắc Ownership, Borrow và hệ thống con trỏ Magnet.</span><span class="en hidden">Detailed explanation of Avera's static memory management: Ownership rules, Borrow rules, and the Magnet pointer system.</span></p>
+  <p class="lead">
+    <span class="vi">Giải thích đầy đủ cơ chế quản lý bộ nhớ tĩnh của Avera: Ownership, Borrow Checker, Drop Elaborator và hệ thống con trỏ Magnet. Tất cả quy tắc được trích xuất trực tiếp từ mã nguồn Rust của checker.</span>
+    <span class="en hidden">Complete explanation of Avera's static memory management: Ownership, Borrow Checker, Drop Elaborator and the Magnet pointer system. All rules extracted directly from the compiler checker Rust source.</span>
+  </p>
 
+  <!-- ════════════════════════════════════════════════════════ -->
   <h2><span class="vi">1. Ownership — Quyền sở hữu bộ nhớ</span><span class="en hidden">1. Ownership — Memory Ownership</span></h2>
-  <p class="vi">Mỗi giá trị trong Avera được theo dõi qua bốn trạng thái bởi MIR Ownership Checker:</p>
-  <p class="en hidden">Each value in Avera is tracked through four states by the MIR Ownership Checker:</p>
+  <p class="vi">
+    Mỗi giá trị trong Avera được Ownership Checker theo dõi qua 4 trạng thái trên MIR CFG
+    (trích từ <code>check/ownership.rs</code> và <code>check/drop_elaborate.rs</code>):
+  </p>
+  <p class="en hidden">
+    Each value in Avera is tracked through 4 states by the Ownership Checker on the MIR CFG
+    (extracted from <code>check/ownership.rs</code> and <code>check/drop_elaborate.rs</code>):
+  </p>
 
   <table class="tbl">
-    <thead><tr><th><span class="vi">Trạng thái</span><span class="en hidden">State</span></th><th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th></tr></thead>
+    <thead><tr>
+      <th><span class="vi">Trạng thái</span><span class="en hidden">State</span></th>
+      <th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th>
+    </tr></thead>
     <tbody>
-      <tr><td><code>Uninit</code></td><td><span class="vi">Biến chưa được gán giá trị.</span><span class="en hidden">Variable not yet initialized.</span></td></tr>
-      <tr><td><code>Init</code></td><td><span class="vi">Biến đã có giá trị, có thể sử dụng.</span><span class="en hidden">Variable is initialized and usable.</span></td></tr>
-      <tr><td><code>Moved</code></td><td><span class="vi">Ownership đã bị chuyển đi nơi khác. Biến không thể dùng nữa.</span><span class="en hidden">Ownership was transferred elsewhere. Variable can no longer be used.</span></td></tr>
-      <tr><td><code>Dropped</code></td><td><span class="vi">Biến đã bị giải phóng bộ nhớ (drop). Biến không thể dùng nữa.</span><span class="en hidden">Variable was dropped (memory freed). Variable can no longer be used.</span></td></tr>
+      <tr><td><code>Uninit</code></td><td><span class="vi">Biến chưa được gán giá trị lần nào.</span><span class="en hidden">Variable has never been assigned a value.</span></td></tr>
+      <tr><td><code>Init</code></td><td><span class="vi">Biến đang giữ một giá trị hợp lệ, có thể đọc/ghi.</span><span class="en hidden">Variable holds a valid value and can be read/written.</span></td></tr>
+      <tr><td><code>Moved</code></td><td><span class="vi">Ownership đã bị chuyển đi nơi khác — biến không thể truy cập nữa.</span><span class="en hidden">Ownership was transferred elsewhere — variable can no longer be accessed.</span></td></tr>
+      <tr><td><code>Dropped</code></td><td><span class="vi">Biến đã bị giải phóng bộ nhớ (drop) — biến không thể truy cập nữa.</span><span class="en hidden">Variable's memory was freed (dropped) — variable can no longer be accessed.</span></td></tr>
     </tbody>
   </table>
 
-  <h3><span class="vi">Quy tắc Ownership</span><span class="en hidden">Ownership Rules</span></h3>
+  <h3><span class="vi">Quy tắc Ownership (từ ownership.rs)</span><span class="en hidden">Ownership Rules (from ownership.rs)</span></h3>
   <ul>
-    <li><span class="vi">Không thể drop một giá trị đã ở trạng thái Moved hoặc đã Dropped.</span><span class="en hidden">You cannot drop a value that has been Moved or already Dropped.</span></li>
-    <li><span class="vi">Không thể sử dụng (đọc/ghi) biến đang ở trạng thái Uninit, Moved, hoặc Dropped.</span><span class="en hidden">You cannot use (read/write) a variable that is Uninit, Moved, or Dropped.</span></li>
-    <li><span class="vi">Khi biến ra khỏi scope, Drop Elaborator tự động chèn lệnh drop vào MIR.</span><span class="en hidden">When a variable goes out of scope, the Drop Elaborator automatically inserts a drop into the MIR.</span></li>
+    <li><span class="vi">Không thể <code>drop</code> một giá trị đã Moved hoặc đã Dropped.</span><span class="en hidden">Cannot <code>drop</code> a value that is already Moved or Dropped.</span></li>
+    <li><span class="vi">Không thể đọc hoặc sử dụng biến đang ở trạng thái <code>Uninit</code>, <code>Moved</code>, hoặc <code>Dropped</code>.</span><span class="en hidden">Cannot read or use a variable that is <code>Uninit</code>, <code>Moved</code>, or <code>Dropped</code>.</span></li>
+    <li><span class="vi">Khi biến ra khỏi scope, trình biên dịch coi đó là một <strong>implicit drop</strong> (StorageDead).</span><span class="en hidden">When a variable goes out of scope, the compiler treats it as an <strong>implicit drop</strong> (StorageDead).</span></li>
   </ul>
 
   <div class="cb">
-  <div class="cb-head"><span>ownership.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>:msg = "quan trong"
-:target = ^msg          # ^msg = move ownership sang target
-                        # msg bây giờ ở trạng thái Moved
+    <div class="cb-head"><span>ownership.av</span><button class="copy-btn">Copy</button></div>
+    <pre><code>:msg = "quan trong"
+:target = ^msg          # ^msg: di chuyển ownership sang target
+                        # msg chuyển sang trạng thái Moved
 
-# print(msg)            # LỖI BIÊN DỊCH: E4001 — Use after move
-print(target)           # OK</code></pre>
-</div>
-
-  <div class="notice">
-    <div class="nt"><span class="vi">Move vs Copy</span><span class="en hidden">Move vs Copy</span></div>
-    <p class="vi">Toán tử <code>^expr</code> thực hiện move tường minh. Với các kiểu nguyên thủy nhỏ (I32, Bool...) trình biên dịch có thể copy ngầm định. Với shape và choice, gán thông thường là move.</p>
-    <p class="en hidden">The <code>^expr</code> operator performs an explicit move. Small primitive types (I32, Bool...) may be implicitly copied by the compiler. Shape and choice assignments are moves.</p>
+# print(msg)            # LỖI E4001: Use after move
+print(target)           # OK — target đang ở trạng thái Init</code></pre>
   </div>
 
-  <h2><span class="vi">2. Borrow — Tham chiếu an toàn</span><span class="en hidden">2. Borrow — Safe References</span></h2>
-  <p class="vi">Borrow là cách tham chiếu giá trị mà không lấy ownership. Borrow Checker theo dõi trạng thái: <code>None</code>, <code>Shared</code>, <code>Mut</code>.</p>
-  <p class="en hidden">A borrow is a reference to a value without taking ownership. The Borrow Checker tracks state: <code>None</code>, <code>Shared</code>, <code>Mut</code>.</p>
+  <div class="notice">
+    <div class="nt"><span class="vi">Explicit Drop sớm</span><span class="en hidden">Early Explicit Drop</span></div>
+    <p class="vi">
+      Bạn có thể giải phóng một biến sớm hơn khi kết thúc scope bằng cú pháp <code>expr!</code>.
+      Sau khi drop, biến chuyển sang trạng thái <code>Dropped</code> và không thể dùng được nữa.
+    </p>
+    <p class="en hidden">
+      You can release a variable earlier than its scope end using <code>expr!</code> syntax.
+      After the drop, the variable transitions to state <code>Dropped</code> and can no longer be used.
+    </p>
+    <div class="cb">
+      <div class="cb-head"><span>drop.av</span><button class="copy-btn">Copy</button></div>
+      <pre><code>:large_data = load_data()
+process(large_data)
+large_data!             # Drop sớm — bộ nhớ được giải phóng ngay đây
+                        # large_data chuyển sang Dropped
+
+# use(large_data)       # LỖI E4002: Use after drop</code></pre>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <h2><span class="vi">2. Drop Elaborator — Sinh lệnh giải phóng tự động</span><span class="en hidden">2. Drop Elaborator — Automatic Deallocation</span></h2>
+  <p class="vi">
+    Đây là phần thực thi thật sự của việc "tự động giải phóng bộ nhớ" trong Avera
+    (trích từ <code>check/drop_elaborate.rs</code>). Drop Elaborator chạy trước codegen và làm 3 việc:
+  </p>
+  <p class="en hidden">
+    This is the real implementation of "automatic memory deallocation" in Avera
+    (extracted from <code>check/drop_elaborate.rs</code>). The Drop Elaborator runs before codegen and does 3 things:
+  </p>
+
+  <ol>
+    <li>
+      <strong><span class="vi">Xác định biến nào sở hữu heap</span><span class="en hidden">Identify which locals own heap memory</span></strong>:
+      <span class="vi">Dò qua MIR, tìm các local được gán bởi <code>avera_alloc</code>, <code>avera_alloc_array</code>, <code>avera_text_new</code>, <code>avera_text_read_line</code>, <code>avera_text_concat</code>, hoặc constructor của <code>shape</code>/<code>choice</code>/<code>array</code>.</span>
+      <span class="en hidden">Scans MIR to find locals assigned by <code>avera_alloc</code>, <code>avera_alloc_array</code>, <code>avera_text_new</code>, <code>avera_text_read_line</code>, <code>avera_text_concat</code>, or constructors of <code>shape</code>/<code>choice</code>/<code>array</code>.</span>
+    </li>
+    <li>
+      <strong><span class="vi">Phân tích luồng dữ liệu (Forward Dataflow)</span><span class="en hidden">Forward Dataflow Analysis</span></strong>:
+      <span class="vi">Duyệt qua toàn bộ basic blocks của MIR CFG để tính trạng thái Ownership của từng local tại mỗi điểm trong chương trình.</span>
+      <span class="en hidden">Traverses all MIR CFG basic blocks to compute the Ownership state of each local at every program point.</span>
+    </li>
+    <li>
+      <strong><span class="vi">Chèn <code>avera_free</code> trước Return</span><span class="en hidden">Insert <code>avera_free</code> before Return</span></strong>:
+      <span class="vi">Tại mỗi block Return, với mỗi local sở hữu heap vẫn còn ở trạng thái <code>Init</code> (chưa bị move hay drop thủ công), tự động chèn lệnh gọi <code>avera_free(local)</code> vào MIR. Tham số hàm (params) được bỏ qua vì caller sở hữu chúng.</span>
+      <span class="en hidden">At each Return block, for each heap-owning local still in state <code>Init</code> (not yet moved or explicitly dropped), automatically inserts a <code>avera_free(local)</code> call into the MIR. Function parameters are skipped because the caller owns them.</span>
+    </li>
+  </ol>
+
+  <div class="notice">
+    <div class="nt"><span class="vi">Ý nghĩa thực tế</span><span class="en hidden">Practical Implication</span></div>
+    <p class="vi">
+      Bạn không cần gọi <code>free()</code> thủ công cho <code>Text</code>, <code>shape</code>, <code>choice</code>, và <code>array</code> — trình biên dịch tự động chèn lệnh giải phóng đúng chỗ thông qua Drop Elaborator. Chỉ gọi <code>free()</code> khi tự quản lý bộ nhớ heap thô qua <code>alloc()</code>.
+    </p>
+    <p class="en hidden">
+      You do not need to manually call <code>free()</code> for <code>Text</code>, <code>shape</code>, <code>choice</code>, and <code>array</code> — the compiler inserts the deallocation automatically via the Drop Elaborator. Only call <code>free()</code> when manually managing raw heap memory via <code>alloc()</code>.
+    </p>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <h2><span class="vi">3. Borrow Checker — Tham chiếu an toàn</span><span class="en hidden">3. Borrow Checker — Safe References</span></h2>
+  <p class="vi">
+    Borrow là cách tham chiếu đến giá trị mà không lấy ownership.
+    Borrow Checker theo dõi trạng thái: <code>None</code>, <code>Shared</code>, <code>Mut</code>
+    (trích từ <code>check/borrow.rs</code>):
+  </p>
+  <p class="en hidden">
+    A borrow is a reference to a value without taking ownership.
+    The Borrow Checker tracks state: <code>None</code>, <code>Shared</code>, <code>Mut</code>
+    (from <code>check/borrow.rs</code>):
+  </p>
+
+  <table class="tbl">
+    <thead><tr>
+      <th><span class="vi">Trạng thái</span><span class="en hidden">State</span></th>
+      <th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th>
+    </tr></thead>
+    <tbody>
+      <tr><td><code>None</code></td><td><span class="vi">Không có borrow nào đang hoạt động.</span><span class="en hidden">No active borrow.</span></td></tr>
+      <tr><td><code>Shared</code></td><td><span class="vi">Đang có borrow chỉ đọc (<code>&amp;T</code>). Nhiều shared borrow được phép đồng thời.</span><span class="en hidden">Active shared read-only borrow (<code>&amp;T</code>). Multiple shared borrows allowed simultaneously.</span></td></tr>
+      <tr><td><code>Mut</code></td><td><span class="vi">Đang có borrow đọc/ghi (<code>&amp;!T</code>). Tại một thời điểm chỉ cho phép đúng một mutable borrow.</span><span class="en hidden">Active mutable read/write borrow (<code>&amp;!T</code>). Only one mutable borrow allowed at a time.</span></td></tr>
+    </tbody>
+  </table>
 
   <h3><span class="vi">Quy tắc Borrow</span><span class="en hidden">Borrow Rules</span></h3>
   <ul>
-    <li><span class="vi">Không thể tạo mutable borrow khi đã có shared hoặc mutable borrow trên cùng địa điểm.</span><span class="en hidden">Cannot create a mutable borrow if a shared or mutable borrow already exists on the same place.</span></li>
-    <li><span class="vi">Không thể tạo shared borrow khi đang có mutable borrow.</span><span class="en hidden">Cannot create a shared borrow while a mutable borrow is active.</span></li>
-    <li><span class="vi">Không thể ghi/gán vào một địa điểm đang được mutable borrow.</span><span class="en hidden">Cannot write/assign to a place that is currently under a mutable borrow.</span></li>
-    <li><span class="vi">Không thể drop một giá trị đang bị borrow.</span><span class="en hidden">Cannot drop a value that is currently borrowed.</span></li>
+    <li><span class="vi">Không thể tạo mutable borrow (<code>&amp;!</code>) khi đã có shared hoặc mutable borrow đang hoạt động trên cùng địa điểm.</span><span class="en hidden">Cannot create a mutable borrow (<code>&amp;!</code>) when a shared or mutable borrow is already active on the same place.</span></li>
+    <li><span class="vi">Không thể tạo shared borrow (<code>&amp;</code>) khi đang có mutable borrow trên cùng địa điểm.</span><span class="en hidden">Cannot create a shared borrow (<code>&amp;</code>) while a mutable borrow is active on the same place.</span></li>
+    <li><span class="vi">Không thể ghi hoặc gán vào một địa điểm đang bị mutable borrow.</span><span class="en hidden">Cannot write or assign to a place currently under a mutable borrow.</span></li>
+    <li><span class="vi">Không thể drop một giá trị đang bị borrow (bất kỳ loại nào).</span><span class="en hidden">Cannot drop a value that is currently borrowed (either kind).</span></li>
   </ul>
 
   <div class="cb">
-  <div class="cb-head"><span>borrow.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>action read_it(u: &User) will     # shared borrow
+    <div class="cb-head"><span>borrow.av</span><button class="copy-btn">Copy</button></div>
+    <pre><code># Shared borrow: tham chiếu chỉ đọc
+action print_name(u: &User) will
     print(u.name)
 finish
 
-action edit_it(u: &!User) will    # mutable borrow
-    u.age = 25
+# Mutable borrow: tham chiếu có thể ghi
+action birthday(u: &!User) will
+    u.age = u.age + 1
+finish
+
+action main(): I32 will
+    :me = User("Alice", 30)
+    print_name(&me)      # OK — shared borrow
+    birthday(&!me)       # OK — mutable borrow (không còn borrow nào khác)
+    return 0
 finish</code></pre>
-</div>
+  </div>
 
-  <h2><span class="vi">3. Magnet Pointer (~) — Con trỏ gắn địa chỉ</span><span class="en hidden">3. Magnet Pointer (~) — Address-Attached Pointer</span></h2>
-  <p class="vi">Magnet pointer là khái niệm độc đáo của Avera. Khi bạn viết <code>~m = target</code>, magnet <code>m</code> gắn trực tiếp vào địa chỉ runtime thực sự của biến <code>target</code>. Magnet Checker theo dõi trạng thái: <code>Detached</code>, <code>Attached</code>, <code>Moved</code>, <code>Dropped</code>.</p>
-  <p class="en hidden">The Magnet pointer is a unique Avera concept. When you write <code>~m = target</code>, magnet <code>m</code> attaches to the actual runtime memory address of <code>target</code>. The Magnet Checker tracks state: <code>Detached</code>, <code>Attached</code>, <code>Moved</code>, <code>Dropped</code>.</p>
+  <!-- ════════════════════════════════════════════════════════ -->
+  <h2><span class="vi">4. Magnet Pointer (~) — Con trỏ gắn địa chỉ</span><span class="en hidden">4. Magnet Pointer (~) — Address-Attached Pointer</span></h2>
+  <p class="vi">
+    Magnet pointer là khái niệm đặc thù của Avera. Khi viết <code>~m = target</code>,
+    magnet <code>m</code> gắn trực tiếp vào địa chỉ runtime thực của biến <code>target</code>,
+    cho phép đọc địa chỉ ô nhớ, tính offset và thực hiện pointer arithmetic an toàn có kiểm soát.
+    Magnet Checker theo dõi 4 trạng thái (trích từ <code>check/magnet.rs</code>):
+  </p>
+  <p class="en hidden">
+    The Magnet pointer is unique to Avera. When writing <code>~m = target</code>,
+    magnet <code>m</code> attaches to the actual runtime address of <code>target</code>,
+    allowing address reading, offset calculation, and controlled safe pointer arithmetic.
+    The Magnet Checker tracks 4 states (from <code>check/magnet.rs</code>):
+  </p>
 
-  <h3><span class="vi">Cú pháp Magnet</span><span class="en hidden">Magnet Syntax</span></h3>
+  <table class="tbl">
+    <thead><tr>
+      <th><span class="vi">Trạng thái Magnet</span><span class="en hidden">Magnet State</span></th>
+      <th><span class="vi">Ý nghĩa</span><span class="en hidden">Meaning</span></th>
+    </tr></thead>
+    <tbody>
+      <tr><td><code>Detached</code></td><td><span class="vi">Magnet chưa gắn vào target nào hoặc đã bị tách khỏi target cũ.</span><span class="en hidden">Magnet not attached to any target, or detached from a previous target.</span></td></tr>
+      <tr><td><code>Attached</code></td><td><span class="vi">Magnet đang trỏ vào một biến hợp lệ, có thể thao tác được.</span><span class="en hidden">Magnet points to a valid live variable and is fully operational.</span></td></tr>
+      <tr><td><code>Moved</code></td><td><span class="vi">Target của magnet đã bị move sang nơi khác.</span><span class="en hidden">The magnet's target was moved to another location.</span></td></tr>
+      <tr><td><code>Dropped</code></td><td><span class="vi">Target của magnet đã bị drop — magnet trỏ vào vùng nhớ không còn hợp lệ.</span><span class="en hidden">The magnet's target was dropped — magnet points to invalid memory.</span></td></tr>
+    </tbody>
+  </table>
 
+  <h3><span class="vi">Cú pháp đầy đủ của Magnet</span><span class="en hidden">Full Magnet Syntax</span></h3>
   <div class="cb">
-  <div class="cb-head"><span>magnet.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>:value = 42
+    <div class="cb-head"><span>magnet_full.av</span><button class="copy-btn">Copy</button></div>
+    <pre><code>:value = 42
 
-# Khai báo magnet (immutable)
+# Khai báo magnet (immutable — Rvalue::MagnetAttach)
 ~m = value
 
 # Khai báo magnet mutable
 ~!m = value
 
-# Đọc địa chỉ bộ nhớ thực tế
+# Đọc địa chỉ bộ nhớ thực tế (Rvalue::MagnetAddress)
 print("Address:", ~m.address)
 
-# Retarget: trỏ magnet sang biến khác
-:other = 99
-m -> other</code></pre>
-</div>
+# Tính offset từ địa chỉ (Rvalue::MagnetOffset)
+# Dùng trong lập trình hệ thống thấp
+print("Offset field:", ~m.offset(4))
 
-  <h3><span class="vi">Quy tắc Magnet Checker</span><span class="en hidden">Magnet Checker Rules</span></h3>
+# Pointer arithmetic (Rvalue::MagnetAdd)
+print("Next slot:", ~m + 1)
+
+# Retarget: trỏ magnet sang biến khác (MagnetRetarget statement)
+:other = 99
+m -> other    # m bây giờ gắn vào other thay vì value</code></pre>
+  </div>
+
+  <h3><span class="vi">Quy tắc Magnet Checker (từ check/magnet.rs)</span><span class="en hidden">Magnet Checker Rules (from check/magnet.rs)</span></h3>
   <ul>
-    <li><span class="vi">Không thể đọc địa chỉ hoặc thực hiện tính toán với magnet đang ở trạng thái Detached.</span><span class="en hidden">Cannot read address or perform arithmetic on a Detached magnet.</span></li>
-    <li><span class="vi">Không thể dùng magnet khi target đã bị Moved hoặc Dropped (lỗi EMagnetUseAfterMove).</span><span class="en hidden">Cannot use a magnet whose target has been Moved or Dropped (error EMagnetUseAfterMove).</span></li>
-    <li><span class="vi">Gắn magnet vào một biến (~m = place) hoạt động như một borrow — sẽ lỗi nếu place đang bị mutable borrow.</span><span class="en hidden">Attaching a magnet (~m = place) acts as a borrow — fails if the place is under a mutable borrow.</span></li>
+    <li>
+      <strong><span class="vi">Không thể đọc address (<code>~m.address</code>) khi magnet ở trạng thái Detached</span><span class="en hidden">Cannot read address (<code>~m.address</code>) when magnet is Detached</span></strong>:
+      <code>EMagnetDetached</code> — "cannot read address of a detached magnet"
+    </li>
+    <li>
+      <strong><span class="vi">Không thể đọc address khi target đã bị Moved</span><span class="en hidden">Cannot read address when target was Moved</span></strong>:
+      <code>EMagnetUseAfterMove</code> — "cannot read address: magnet target has moved"
+    </li>
+    <li>
+      <strong><span class="vi">Không thể đọc address khi target đã bị Dropped</span><span class="en hidden">Cannot read address when target was Dropped</span></strong>:
+      <code>EMagnetUseAfterMove</code> — "cannot read address: magnet has been dropped"
+    </li>
+    <li>
+      <strong><span class="vi">Không thể tính offset khi magnet không ở trạng thái Attached</span><span class="en hidden">Cannot compute offset when magnet is not Attached</span></strong>:
+      <code>EMagnetDetached</code> — "cannot read offset of a non-attached magnet"
+    </li>
+    <li>
+      <strong><span class="vi">Không thể pointer arithmetic khi magnet không ở trạng thái Attached</span><span class="en hidden">Cannot perform pointer arithmetic when magnet is not Attached</span></strong>:
+      <code>EMagnetDetached</code> — "cannot perform pointer arithmetic on a non-attached magnet"
+    </li>
+    <li>
+      <strong><span class="vi">Gán giá trị không phải magnet vào magnet local thì Detach magnet đó</span><span class="en hidden">Assigning a non-magnet rvalue to a magnet local detaches it</span></strong>:
+      <span class="vi">Nếu bạn gán một giá trị bình thường vào biến magnet (không phải <code>MagnetAttach</code>, <code>MagnetNone</code>, hay <code>MagnetFromAddr</code>), trạng thái magnet bị xóa về Detached — ngoại trừ write-through (<code>m = Rvalue::Store{addr: m, ...}</code>) thì magnet vẫn giữ Attached.</span>
+      <span class="en hidden">If you assign an ordinary value to a magnet local (not <code>MagnetAttach</code>, <code>MagnetNone</code>, or <code>MagnetFromAddr</code>), the magnet state is cleared to Detached — except for write-throughs (<code>m = Rvalue::Store{addr: m, ...}</code>) which leave the magnet Attached.</span>
+    </li>
+    <li>
+      <strong><span class="vi">Gắn magnet (<code>~m = place</code>) hoạt động như một borrow</span><span class="en hidden">Attaching a magnet (<code>~m = place</code>) acts as a borrow</span></strong>:
+      <span class="vi">Sẽ lỗi nếu <code>place</code> đang bị mutable borrow.</span>
+      <span class="en hidden">Fails if <code>place</code> is currently under a mutable borrow.</span>
+    </li>
   </ul>
 
   <div class="cb">
-  <div class="cb-head"><span>magnet_error.av</span><button class="copy-btn">Copy</button></div>
-  <pre><code>:x = 10
-~m = x
+    <div class="cb-head"><span>magnet_errors.av</span><button class="copy-btn">Copy</button></div>
+    <pre><code>:x = 10
+~m = x                  # m: Attached
 
-:y = ^x     # x bị move sang y
-            # Bây giờ target của m đã bị Moved
+:y = ^x                 # x bị move — target của m đã Moved
+# print(~m.address)     # LỖI EMagnetUseAfterMove: "magnet target has moved"
 
-# print(~m.address)    # LỖI: EMagnetUseAfterMove</code></pre>
-</div>
+---
+
+~dangling = none        # none = MagnetNone -> state: Detached
+# print(~dangling.address)  # LỖI EMagnetDetached: "cannot read address of a detached magnet"</code></pre>
+  </div>
 </div>
 
     <footer class="footer">
