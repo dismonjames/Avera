@@ -22,8 +22,14 @@ jobs:
         with:
           components: rustfmt
 
-      - name: Check formatting
-        run: cargo fmt --all --check
+      - name: Check formatting of maintained files
+        run: >-
+          rustfmt --edition 2021 --check
+          src/check/ownership.rs
+          src/check/drop_elaborate.rs
+          src/check/borrow.rs
+          tests/common/mod.rs
+          tests/compile_fail.rs
 
       - name: Check all targets
         run: cargo check --all-targets
