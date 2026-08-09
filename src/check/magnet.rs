@@ -118,16 +118,6 @@ impl<'a> MagnetChecker<'a> {
     fn handle_rvalue(&mut self, rv: &Rvalue, state: &mut MagnetMap, dest: LocalId) {
         match rv {
             Rvalue::MagnetAttach { place, is_mut, .. } => {
-                if state.get(&dest).is_some_and(|facts| {
-                    facts
-                        .iter()
-                        .any(|fact| fact.state == MagnetState::Attached && !fact.is_mut)
-                }) {
-                    self.error(
-                        "cannot retarget an immutable magnet",
-                        DiagnosticKind::EImmutableMutate,
-                    );
-                }
                 state.insert(
                     dest,
                     HashSet::from([MagnetFact {
