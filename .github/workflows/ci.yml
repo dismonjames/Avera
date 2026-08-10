@@ -39,6 +39,7 @@ jobs:
           src/driver_pipeline/runtime.rs
           src/module/mod.rs
           src/project/mod.rs
+          src/resolve/mod.rs
           src/types/mod.rs
           src/types/intern.rs
           src/types/ty.rs
@@ -55,6 +56,7 @@ jobs:
           tests/lowering_regressions.rs
           tests/codegen_regressions.rs
           tests/type_context_regressions.rs
+          tests/resolve_metadata_regressions.rs
 
       - name: Check all targets
         run: cargo check --all-targets
