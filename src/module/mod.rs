@@ -123,15 +123,17 @@ pub fn detect_cycles(graph: &ModuleGraph) -> Option<Vec<String>> {
         visited.insert(name.to_string(), true);
         on_stack.insert(name.to_string(), true);
         stack.push(name.to_string());
+
         if let Some(m) = graph.modules.get(name) {
             for dep in &m.descriptor.depends {
-                if (graph.modules.contains_key(dep) || STD_MODULES.contains(&dep.as_str()))
-                    && visit(graph, dep, stack, visited, on_stack).is_some()
-                {
-                    return Some(stack.clone());
+                if graph.modules.contains_key(dep) || STD_MODULES.contains(&dep.as_str()) {
+                    if let Some(cycle) = visit(graph, dep, stack, visited, on_stack) {
+                        return Some(cycle);
+                    }
                 }
             }
         }
+
         on_stack.insert(name.to_string(), false);
         stack.pop();
         None

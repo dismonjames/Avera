@@ -1,9 +1,9 @@
 #std.io
 
 action main(): I32 will
-    print("Enter a number:")
-    :n = input()
-    print("You entered:", n)
-    print("Doubled:", n + n)
+    print("Enter text:")
+    :text = input()
+    print("You entered:", text)
+    print("Length:", text.len())
     return 0
 finish

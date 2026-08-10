@@ -28,9 +28,19 @@ jobs:
           src/check/ownership.rs
           src/check/drop_elaborate.rs
           src/check/borrow.rs
+          src/check/magnet.rs
+          src/check/validate.rs
+          src/cli.rs
+          src/diagnostics/emitter.rs
+          src/driver_pipeline/runtime.rs
+          src/module/mod.rs
           tests/common/mod.rs
           tests/compile_fail.rs
           tests/mir_safety.rs
+          tests/runtime_regressions.rs
+          tests/module_graph_regressions.rs
+          tests/diagnostics_regressions.rs
+          tests/cli_regressions.rs
 
       - name: Check all targets
         run: cargo check --all-targets
