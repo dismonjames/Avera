@@ -10,7 +10,6 @@ use crate::lexer::Lexer;
 use crate::mir::body::Body;
 use crate::parser::parse;
 use crate::resolve::Defs;
-use crate::symbol::FileId;
 use crate::types::intern::TyCtxt;
 use std::path::{Path, PathBuf};
 
@@ -25,9 +24,8 @@ pub fn check(inputs: &[PathBuf]) -> Result<(), ()> {
     }
     let mut cx = TyCtxt::new();
     let mut defs = Defs::new();
-    for (i, (_, module)) in modules.iter().enumerate() {
-        let fid = FileId::new(i as u32);
-        let resolved = crate::resolve::resolve_module(&mut defs, fid, module);
+    for (_, module) in &modules {
+        let resolved = crate::resolve::resolve_module(&mut defs, module.span.file, module);
         diags.extend(resolved.diags);
     }
     if diags.has_errors() {
@@ -75,9 +73,8 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
     }
     let mut cx = TyCtxt::new();
     let mut defs = Defs::new();
-    for (i, (_, module)) in modules.iter().enumerate() {
-        let fid = FileId::new(i as u32);
-        let resolved = crate::resolve::resolve_module(&mut defs, fid, module);
+    for (_, module) in &modules {
+        let resolved = crate::resolve::resolve_module(&mut defs, module.span.file, module);
         diags.extend(resolved.diags);
     }
     if diags.has_errors() {
@@ -168,7 +165,13 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
         return Ok(());
     }
     let exe_path = build_dir.join(&name);
-    let rt_obj = runtime::build_runtime_object(&build_dir);
+    let rt_obj = match runtime::build_runtime_object(&build_dir) {
+        Ok(path) => path,
+        Err(e) => {
+            eprintln!("runtime build error: {e}");
+            return Err(());
+        }
+    };
     if let Err(e) = object::link_executable_with_rt(&obj_path, &rt_obj, &exe_path) {
         eprintln!("link error: {}", e);
         return Err(());

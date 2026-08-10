@@ -31,22 +31,32 @@ jobs:
           src/check/magnet.rs
           src/check/validate.rs
           src/cli.rs
+          src/codegen/mod.rs
+          src/codegen/validate.rs
           src/diagnostics/emitter.rs
           src/driver_pipeline/lower.rs
           src/driver_pipeline/mod.rs
           src/driver_pipeline/runtime.rs
           src/module/mod.rs
           src/project/mod.rs
+          src/resolve/mod.rs
+          src/types/mod.rs
+          src/types/intern.rs
+          src/types/ty.rs
           tests/common/mod.rs
           tests/compile_fail.rs
           tests/mir_safety.rs
           tests/runtime_regressions.rs
+          tests/runtime_build_regressions.rs
           tests/module_graph_regressions.rs
           tests/diagnostics_regressions.rs
           tests/cli_regressions.rs
           tests/pipeline_regressions.rs
           tests/project_regressions.rs
           tests/lowering_regressions.rs
+          tests/codegen_regressions.rs
+          tests/type_context_regressions.rs
+          tests/resolve_metadata_regressions.rs
 
       - name: Check all targets
         run: cargo check --all-targets

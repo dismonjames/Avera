@@ -196,9 +196,6 @@ long avera_array_set(void *arr_ptr, long index, long value, long elem_size) {
     }
     long *slot = (long *)(arr->data + (size_t)index * 8);
     *slot = value;
-    /* Current stage-0 MIR models Call with a destination even for setter-like
-     * helpers. Return the stable owner handle so that destination remains valid
-     * until lowering learns to use a dedicated ignored temp for unit calls. */
     return (long)(intptr_t)arr_ptr;
 }
 
@@ -306,26 +303,36 @@ void *avera_text_read_line(void) {
 }
 "#;
 
-pub fn build_runtime_object(build_dir: &Path) -> PathBuf {
+pub fn build_runtime_object(build_dir: &Path) -> Result<PathBuf, String> {
+    std::fs::create_dir_all(build_dir).map_err(|e| {
+        format!(
+            "cannot create runtime build directory `{}`: {e}",
+            build_dir.display()
+        )
+    })?;
+
     let rt_path = build_dir.join("avera_runtime.c");
     let obj_path = build_dir.join("avera_runtime.o");
-    std::fs::create_dir_all(build_dir).ok();
     let need_write = match std::fs::read_to_string(&rt_path) {
         Ok(existing) => existing != RUNTIME_C,
-        Err(_) => true,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => true,
+        Err(e) => return Err(format!("cannot read `{}`: {e}", rt_path.display())),
     };
     if need_write {
-        std::fs::write(&rt_path, RUNTIME_C).ok();
+        std::fs::write(&rt_path, RUNTIME_C)
+            .map_err(|e| format!("cannot write `{}`: {e}", rt_path.display()))?;
     }
+
     if let (Ok(src_meta), Ok(obj_meta)) =
         (std::fs::metadata(&rt_path), std::fs::metadata(&obj_path))
     {
         if let (Ok(src_time), Ok(obj_time)) = (src_meta.modified(), obj_meta.modified()) {
-            if obj_time >= src_time {
-                return obj_path;
+            if obj_time >= src_time && obj_meta.len() > 0 {
+                return Ok(obj_path);
             }
         }
     }
+
     let pid = std::process::id();
     let tmp_obj = build_dir.join(format!(
         "avera_runtime.{}.{}.o",
@@ -335,16 +342,47 @@ pub fn build_runtime_object(build_dir: &Path) -> PathBuf {
             .map(|d| d.as_nanos())
             .unwrap_or(0)
     ));
-    let _ = std::process::Command::new("cc")
+    let cc = std::env::var_os("CC").unwrap_or_else(|| "cc".into());
+    let output = std::process::Command::new(&cc)
         .args(["-c", "-O2", "-o"])
         .arg(&tmp_obj)
         .arg(&rt_path)
-        .output();
-    if !tmp_obj.exists() {
-        return obj_path;
+        .output()
+        .map_err(|e| format!("failed to execute C compiler `{:?}`: {e}", cc))?;
+
+    if !output.status.success() {
+        let _ = std::fs::remove_file(&tmp_obj);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!(
+            "C runtime compilation failed with {}:\n{}",
+            output.status,
+            stderr.trim()
+        ));
     }
+    let meta = std::fs::metadata(&tmp_obj).map_err(|e| {
+        format!(
+            "C compiler reported success but runtime object `{}` is missing: {e}",
+            tmp_obj.display()
+        )
+    })?;
+    if meta.len() == 0 {
+        let _ = std::fs::remove_file(&tmp_obj);
+        return Err("C compiler produced an empty Avera runtime object".to_string());
+    }
+
     match std::fs::rename(&tmp_obj, &obj_path) {
-        Ok(()) => obj_path,
-        Err(_) => tmp_obj,
+        Ok(()) => Ok(obj_path),
+        Err(rename_err) => {
+            if tmp_obj.is_file() {
+                // Another build may have won the race installing obj_path.
+                // The unique temp object is complete and safe to link.
+                Ok(tmp_obj)
+            } else {
+                Err(format!(
+                    "cannot install runtime object `{}`: {rename_err}",
+                    obj_path.display()
+                ))
+            }
+        }
     }
 }

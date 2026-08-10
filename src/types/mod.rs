@@ -1,5 +1,4 @@
 pub mod intern;
-pub mod lower;
 pub mod ty;
 
 pub use intern::TyCtxt;
