@@ -1,4 +1,4 @@
-use crate::symbol::{FieldId, TypeId};
+use crate::symbol::TypeId;
 
 pub type TyId = TypeId;
 
@@ -23,6 +23,7 @@ impl Abilities {
     pub fn none() -> Self {
         Self::default()
     }
+
     pub fn primitives() -> Self {
         Self {
             copy: CopyKind::Primitive,
@@ -56,41 +57,17 @@ pub enum TyData {
     Bytes,
     Unit,
     Never,
-    Shape {
-        def: u32,
-        args: Vec<TyId>,
-    },
-    Choice {
-        def: u32,
-        args: Vec<TyId>,
-    },
-    Array {
-        elem: TyId,
-        size: u64,
-    },
-    Borrow {
-        inner: TyId,
-        is_mut: bool,
-    },
-    Magnet {
-        inner: TyId,
-        is_mut: bool,
-    },
+    Shape { def: u32, args: Vec<TyId> },
+    Choice { def: u32, args: Vec<TyId> },
+    Array { elem: TyId, size: u64 },
+    Borrow { inner: TyId, is_mut: bool },
+    Magnet { inner: TyId, is_mut: bool },
     Address(TyId),
     Span(TyId),
     Maybe(TyId),
-    Outcome {
-        ok: TyId,
-        err: TyId,
-    },
-    Fn {
-        params: Vec<TyId>,
-        ret: TyId,
-    },
-    Var {
-        idx: u32,
-        name: String,
-    },
+    Outcome { ok: TyId, err: TyId },
+    Fn { params: Vec<TyId>, ret: TyId },
+    Var { idx: u32, name: String },
     Infer,
 }
 
@@ -199,25 +176,26 @@ impl TyData {
 pub struct FieldInfo {
     pub name: String,
     pub ty: TyId,
-    pub offset: u64,
+    pub span: crate::diagnostics::span::Span,
 }
 
 #[derive(Clone, Debug)]
 pub struct VariantInfo {
     pub name: String,
-    pub fields: Vec<FieldId>,
-    pub discr: u64,
+    pub payload: Option<Vec<(String, TyId)>>,
+    pub span: crate::diagnostics::span::Span,
 }
 
 #[derive(Clone, Debug)]
 pub enum DefKind {
     Shape {
-        fields: Vec<FieldId>,
-        abilities: Abilities,
+        generics: Vec<String>,
+        fields: Vec<FieldInfo>,
     },
     Choice {
+        generics: Vec<String>,
         variants: Vec<VariantInfo>,
-        abilities: Abilities,
     },
-    Ability,
+    Ability { generics: Vec<String> },
+    Action { generics: Vec<String> },
 }
