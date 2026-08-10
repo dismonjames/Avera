@@ -196,6 +196,10 @@ pub enum DefKind {
         generics: Vec<String>,
         variants: Vec<VariantInfo>,
     },
-    Ability { generics: Vec<String> },
-    Action { generics: Vec<String> },
+    Ability {
+        generics: Vec<String>,
+    },
+    Action {
+        generics: Vec<String>,
+    },
 }
