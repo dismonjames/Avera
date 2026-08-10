@@ -59,7 +59,6 @@ fn resolve_item(
         ItemKind::Choice(c) => (c.name.clone(), c.span, DefClass::Choice),
         ItemKind::Ability(a) => (a.name.clone(), a.span, DefClass::Ability),
         ItemKind::Action(a) => {
-            // Register action. For methods, use "Type.method" as the key.
             let full_name = if let Some(recv) = &a.sig.receiver {
                 format!("{}.{}", recv.as_str(), a.sig.name)
             } else {
@@ -67,14 +66,9 @@ fn resolve_item(
             };
             let is_contract = a.body.is_none();
             if let Some(existing) = defs.find(&full_name) {
-                // A `.mav` contract declaration (no body) and its `.av`
-                // implementation (with body) name the same symbol: that is a
-                // contract match, not a duplicate.
                 let prev = defs.info(existing);
-                let both_contract_match = prev.is_contract || is_contract; // one is contract, other is impl
+                let both_contract_match = prev.is_contract || is_contract;
                 if both_contract_match && (prev.is_contract != is_contract) {
-                    // Mark the merged def as an implementation (the contract
-                    // is satisfied). Keep the existing registration.
                     defs.info_mut(existing).is_contract = false;
                     return Some(existing);
                 }
@@ -93,13 +87,13 @@ fn resolve_item(
                 span: a.span,
                 file,
                 class: DefClass::Action,
-                kind: crate::types::ty::DefKind::Ability {
+                kind: crate::types::ty::DefKind::Action {
                     generics: Vec::new(),
                 },
                 is_contract,
             }));
         }
-        _ => return None, // impls/foreign are resolved in a second pass.
+        _ => return None,
     };
     if let Some(existing) = defs.find(&name) {
         diags.push(
@@ -112,7 +106,6 @@ fn resolve_item(
         );
         return Some(existing);
     }
-    // Populate the DefKind with actual fields/variants.
     let kind = match &item.kind {
         ItemKind::Shape(s) => {
             let fields: Vec<crate::types::ty::FieldInfo> = s
