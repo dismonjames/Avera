@@ -46,7 +46,7 @@ pub fn check(inputs: &[PathBuf]) -> Result<(), ()> {
                     } else {
                         DiagnosticKind::EDuplicate
                     },
-                    Span::point(FileId::new(0), 0),
+                    Span::point(module.span.file, 0),
                     format!("{}: {}", path.display(), msg),
                 ));
             }
@@ -75,7 +75,6 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
     }
     let mut cx = TyCtxt::new();
     let mut defs = Defs::new();
-    // Resolve modules: populate the global Defs table with shapes, choices, actions.
     for (i, (_, module)) in modules.iter().enumerate() {
         let fid = FileId::new(i as u32);
         let resolved = crate::resolve::resolve_module(&mut defs, fid, module);
@@ -90,9 +89,6 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
         match lower::lower_module(&mut cx, &defs, module) {
             Ok(b) => bodies.extend(b),
             Err(msg) => {
-                // Lowering errors are user-facing semantic rejections (e.g.
-                // duplicate declaration). Distinguish re-declaration from a
-                // genuine internal bug by the message prefix.
                 let is_internal = msg.starts_with("internal compiler error");
                 diags.push(Diagnostic::error(
                     if is_internal {
@@ -100,7 +96,7 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
                     } else {
                         DiagnosticKind::EDuplicate
                     },
-                    Span::point(FileId::new(0), 0),
+                    Span::point(module.span.file, 0),
                     format!("{}: {}", path.display(), msg),
                 ));
             }
@@ -116,7 +112,6 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
             eprintln!("--- MIR: {} ---\n{:#?}", b.name, b);
         }
     }
-    // Run MIR validation and semantic checkers.
     for b in &bodies {
         crate::check::validate_mir(b, &mut diags);
         crate::check::validate_return_consistency(b, &cx, &mut diags);
@@ -128,14 +123,9 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
         report(&map, &diags);
         return Err(());
     }
-    // Drop elaboration: insert StorageDead at return points.
     let mut bodies = bodies;
     for b in &mut bodies {
         crate::check::elaborate_drops(b);
-    }
-    if diags.has_errors() {
-        report(&map, &diags);
-        return Err(());
     }
     let name = inputs
         .first()
@@ -144,7 +134,13 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
         .unwrap_or("avera_out")
         .to_string();
     let build_dir = PathBuf::from("build/debug");
-    std::fs::create_dir_all(&build_dir).ok();
+    if let Err(e) = std::fs::create_dir_all(&build_dir) {
+        eprintln!(
+            "cannot create build directory `{}`: {e}",
+            build_dir.display()
+        );
+        return Err(());
+    }
     match emit {
         Some(crate::cli::EmitKind::Ast) => {
             for (_, m) in &modules {
@@ -172,7 +168,6 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
         return Ok(());
     }
     let exe_path = build_dir.join(&name);
-    // Link with the runtime support object.
     let rt_obj = runtime::build_runtime_object(&build_dir);
     if let Err(e) = object::link_executable_with_rt(&obj_path, &rt_obj, &exe_path) {
         eprintln!("link error: {}", e);
@@ -184,7 +179,13 @@ pub fn build(inputs: &[PathBuf], _opt: u32, emit: Option<crate::cli::EmitKind>) 
 
 pub fn run(input: &Path, args: &[String]) -> Result<u8, ()> {
     let build_dir = PathBuf::from("build/debug");
-    std::fs::create_dir_all(&build_dir).ok();
+    if let Err(e) = std::fs::create_dir_all(&build_dir) {
+        eprintln!(
+            "cannot create build directory `{}`: {e}",
+            build_dir.display()
+        );
+        return Err(());
+    }
     let name = input
         .file_stem()
         .and_then(|s| s.to_str())
@@ -205,12 +206,18 @@ pub fn run(input: &Path, args: &[String]) -> Result<u8, ()> {
 }
 
 pub fn test(inputs: &[PathBuf]) -> Result<(), ()> {
+    if inputs.is_empty() {
+        eprintln!("`avera test` needs at least one input");
+        return Err(());
+    }
     let mut ok = 0usize;
     let mut fail = 0usize;
     for input in inputs {
         if input.is_dir() {
             let mut entries: Vec<PathBuf> = std::fs::read_dir(input)
-                .map_err(|_| ())?
+                .map_err(|e| {
+                    eprintln!("cannot read test directory `{}`: {e}", input.display());
+                })?
                 .filter_map(|e| e.ok().map(|e| e.path()))
                 .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("av"))
                 .collect();
@@ -261,15 +268,23 @@ pub fn fmt(inputs: &[PathBuf], check: bool) -> Result<(), ()> {
         let mut map = SourceMap::new();
         let fid = map.load(input, &src);
         let lexed = Lexer::new(fid, &src).lex();
+        let mut diags = lexed.diags;
         let parsed = parse(fid, lexed.tokens);
+        diags.extend(parsed.diags.clone());
+        if diags.has_errors() {
+            report(&map, &diags);
+            eprintln!("refusing to format malformed source `{}`", input.display());
+            return Err(());
+        }
         let formatted = crate::fmt::format_module(&parsed.module);
         if check {
             if formatted != src {
                 any_diff = true;
                 eprintln!("would reformat {}", input.display());
             }
-        } else {
-            std::fs::write(input, formatted).ok();
+        } else if let Err(e) = std::fs::write(input, formatted) {
+            eprintln!("cannot write `{}`: {}", input.display(), e);
+            return Err(());
         }
     }
     if check && any_diff {
@@ -285,9 +300,6 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
     let mut modules: Vec<(PathBuf, Module)> = Vec::new();
     let mut loaded_names: std::collections::HashSet<String> = std::collections::HashSet::new();
     let mut loaded_files: std::collections::HashSet<PathBuf> = std::collections::HashSet::new();
-
-    // Work queue of (path, owning-dir) pairs. The owning dir is where
-    // sibling module contracts/sources for this file live.
     let mut queue: Vec<(PathBuf, PathBuf)> = Vec::new();
     for input in inputs {
         queue.push((
@@ -297,7 +309,6 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
     }
 
     while let Some((path, search_dir)) = queue.pop() {
-        // Legacy extension detection — give a clear, actionable error.
         if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
             let msg = match ext {
                 "cgr" => Some(("`.cgr` is no longer an Avera source extension", "use `.av`")),
@@ -312,19 +323,14 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
                 _ => None,
             };
             if let Some((m, sugg)) = msg {
-                // Load the source so the diagnostic has a valid FileId to
-                // point at; otherwise the emitter panics on the empty map.
-                let point_span = match std::fs::read_to_string(&path) {
-                    Ok(src) => {
-                        let fid = map.load(&path, &src);
-                        Span::point(fid, 0)
-                    }
-                    Err(_) => Span::point(FileId::new(0), 0),
+                let fid = match std::fs::read_to_string(&path) {
+                    Ok(src) => map.load(&path, &src),
+                    Err(_) => map.load(&path, ""),
                 };
                 diags.push(
                     Diagnostic::error(
                         DiagnosticKind::ELegacyExtension,
-                        point_span,
+                        Span::point(fid, 0),
                         format!("{}: {}", path.display(), m),
                     )
                     .with_suggestion(sugg.to_string()),
@@ -339,9 +345,10 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
         let src = match std::fs::read_to_string(&path) {
             Ok(s) => s,
             Err(e) => {
+                let fid = map.load(&path, "");
                 diags.push(Diagnostic::error(
                     DiagnosticKind::EMissingModule,
-                    Span::point(FileId::new(0), 0),
+                    Span::point(fid, 0),
                     format!("cannot read `{}`: {}", path.display(), e),
                 ));
                 continue;
@@ -353,7 +360,6 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
         diags.extend(lexed.diags);
         let parsed = parse(fid, lexed.tokens);
         diags.extend(parsed.diags.clone());
-        // Collect import directives and resolve them.
         for d in &parsed.module.directives {
             if let crate::ast::DirectiveKind::Import { path: ipath, .. } = &d.kind {
                 let module_name = crate::module::import_to_module_name(&d.kind).unwrap_or_default();
@@ -361,29 +367,33 @@ fn load_and_parse(inputs: &[PathBuf]) -> (SourceMap, DiagnosticList, Vec<(PathBu
                     continue;
                 }
                 loaded_names.insert(module_name.clone());
-                // Try stdlib first.
+                let mut resolved = false;
                 if let Some(stdlib_path) = resolve_stdlib_import(&ipath.segments) {
-                    if stdlib_path.exists() {
-                        let parent = stdlib_path.parent().unwrap_or(Path::new(".")).to_path_buf();
-                        queue.push((stdlib_path, parent));
-                        continue;
+                    let parent = stdlib_path.parent().unwrap_or(Path::new(".")).to_path_buf();
+                    queue.push((stdlib_path, parent));
+                    resolved = true;
+                }
+                if !resolved {
+                    if let Some(mav_path) = resolve_user_module(&ipath.segments, &search_dir) {
+                        load_module_contract(
+                            &mav_path,
+                            &mut map,
+                            &mut diags,
+                            &mut modules,
+                            &mut queue,
+                            &mut loaded_names,
+                            &mut loaded_files,
+                        );
+                        resolved = true;
                     }
                 }
-                // User module: resolve `app.math` → `math.mav` near the
-                // importing file (or the search dir it was queued with).
-                if let Some(mav_path) = resolve_user_module(&ipath.segments, &search_dir) {
-                    load_module_contract(
-                        &mav_path,
-                        &mut map,
-                        &mut diags,
-                        &mut modules,
-                        &mut queue,
-                        &mut loaded_names,
-                        &mut loaded_files,
-                    );
+                if !resolved {
+                    diags.push(Diagnostic::error(
+                        DiagnosticKind::EMissingModule,
+                        d.span,
+                        format!("cannot resolve imported module `{module_name}`"),
+                    ));
                 }
-                // If neither resolved, the import is a dangling reference;
-                // name resolution will report it later if used.
             }
         }
         modules.push((path.clone(), parsed.module));
@@ -409,9 +419,10 @@ fn load_module_contract(
     let src = match std::fs::read_to_string(mav_path) {
         Ok(s) => s,
         Err(e) => {
+            let fid = map.load(mav_path, "");
             diags.push(Diagnostic::error(
                 DiagnosticKind::EMissingModule,
-                Span::point(FileId::new(0), 0),
+                Span::point(fid, 0),
                 format!("cannot read Avera module `{}`: {}", mav_path.display(), e),
             ));
             return;
@@ -424,10 +435,7 @@ fn load_module_contract(
     diags.extend(lexed.diags);
     let parsed = parse(fid, lexed.tokens);
     diags.extend(parsed.diags.clone());
-    // The contract's declarations (export shape/action) are public; keep them.
     modules.push((mav_path.to_path_buf(), parsed.module.clone()));
-    // Enqueue each #source ".av" file, and record the module name so its
-    // imports aren't re-resolved.
     for d in &parsed.module.directives {
         match &d.kind {
             crate::ast::DirectiveKind::Module(p) => {
@@ -451,33 +459,52 @@ fn resolve_stdlib_import(segments: &[String]) -> Option<PathBuf> {
     if segments.is_empty() {
         return None;
     }
-    // Try multiple candidate locations:
-    // 1. ./stdlib/std/NAME.av
-    // 2. ./std/NAME.av
-    // 3. Relative to the input file's parent dir.
-    let path = segments.join("/");
-    let candidates = [
-        PathBuf::from("stdlib").join(&path).with_extension("av"),
-        PathBuf::from("std").join(&path).with_extension("av"),
-        PathBuf::from(&path).with_extension("av"),
-    ];
-    for c in &candidates {
-        if c.exists() {
-            return Some(c.clone());
+
+    let module_path = segments.join("/");
+    let mut roots = Vec::new();
+
+    if let Ok(root) = std::env::var("AVERA_STDLIB") {
+        if !root.trim().is_empty() {
+            roots.push(PathBuf::from(root));
         }
     }
-    None
+
+    roots.push(PathBuf::from("stdlib"));
+    roots.push(PathBuf::from("std"));
+
+    let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    roots.push(manifest_root.join("stdlib"));
+    roots.push(manifest_root.join("std"));
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(debug_or_release) = exe.parent() {
+            if let Some(target) = debug_or_release.parent() {
+                if let Some(root) = target.parent() {
+                    roots.push(root.join("stdlib"));
+                    roots.push(root.join("std"));
+                }
+            }
+        }
+    }
+
+    for root in roots {
+        let candidate = root.join(&module_path).with_extension("av");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+
+    let direct = PathBuf::from(&module_path).with_extension("av");
+    direct.is_file().then_some(direct)
 }
 
 fn resolve_user_module(segments: &[String], search_dir: &Path) -> Option<PathBuf> {
     let file_name = segments.last()?.clone();
     let mav = format!("{}.mav", file_name);
-    // Same dir as the importer.
     let candidate = search_dir.join(&mav);
     if candidate.is_file() {
         return Some(candidate);
     }
-    // src/ root (for main.av importing modules in src/).
     let src_candidate = PathBuf::from("src").join(&mav);
     if src_candidate.is_file() {
         return Some(src_candidate);
@@ -491,7 +518,6 @@ fn normalize_source_path(dir: &Path, source: &str) -> PathBuf {
         return p.to_path_buf();
     }
     let joined = dir.join(p);
-    // Block `..` escapes above the module directory.
     let cleaned: PathBuf = joined
         .components()
         .filter(|c| *c != std::path::Component::ParentDir)
