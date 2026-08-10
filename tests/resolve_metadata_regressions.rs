@@ -19,7 +19,8 @@ fn action_definition_has_action_metadata() {
     let resolved = resolve_module(&mut defs, file, &parsed.module);
     assert!(!resolved.diags.has_errors());
 
-    let info = defs.find("answer").expect("action definition missing");
+    let id = defs.find("answer").expect("action definition missing");
+    let info = defs.info(id);
     assert!(matches!(info.class, DefClass::Action));
     assert!(matches!(info.kind, DefKind::Action { .. }));
 }
